@@ -6,8 +6,9 @@
 **/
 #include <stdio.h>
 #include <stdlib.h>
-#include "neuron.h"
+//#include "neuron.h"
 
+using namespace std;
 
 class Neuron{
 public:
@@ -15,7 +16,7 @@ public:
 	float in_value; //only usable in some algorithms, or biases
 	float out_value;
 
-	float evalNeuron(float(*eval)(int)){
+	float evalNeuron(float(*eval)(float)){
 		out_value = eval(in_value);
 		return out_value;
 	}
@@ -31,12 +32,17 @@ public:
 
 class Link{
 public:
+
+	Link(){
+		weight = rand();
+	}
+
 	float weight;
-	Neuron from;
-	Nueron to;
+	Neuron *from;
+	Neuron *to;
 
 	float sumLink(){
-		to.in_value = from->out_value * weight;
+		to->in_value = from->out_value * weight;
 	}
 
 };

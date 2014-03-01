@@ -2,13 +2,13 @@
 
 using namespace std;
 
-class perceptron{
+class adaline{
 
 public:
 
-	perceptron(int num_hidden, Test data_training, float rate){
-		num_att = data_training[0].first.size();
-		num_class = data_training[0].second.size();
+	adaline(int num_hidden, Test data_training, int num_classes, float rate){
+		num_att = data_training[0].size() - num_classes;
+		num_class = num_classes;
 
 		training_data = data_training;
 
@@ -34,7 +34,7 @@ public:
 			z.push_back(z_bias);
 		}
 
-		//input.push_back(new Neuron());
+		//input.push_back(new N)
 			//output
 		for (int i = 0; i < num_class; ++i)
 		{
@@ -50,8 +50,8 @@ public:
 				for (std::vector<Neuron>::iterator j = y.begin(); j != y.end(); ++j)
 				{
 					Link l = new Link();
-					l.from = i;
-					l.to = j;
+					l.from = *((Neuron*)(i));
+					l.to = *((Neuron*)(j));
 					l_y.push_back(l);
 				}
 				
@@ -59,7 +59,12 @@ public:
 		}
 	}
 
-	
+	void train(){
+		//si es simple, simple_train
+		if(z.size() == 0) return simple_train();
+		//si es complejo, multi_train
+		else multi_train();
+	}
 
 	
 
@@ -69,38 +74,7 @@ public:
 
 
 	void test(){
-            int ndata = 0;
-            for(vector<vector>::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
-                for(vector<Neuron>::iterator in_n = input.begin(); in_n != input.end(); ++in_n){
-                    in_n->in_value= *i[ndata];
-                }
-                for(vector<Link>::iterator in_link = l_z.begin(); in_link != l_z.end(); ++in_link){
-                    in_link->sumLink();
-                }
-                int trueVal = 0;
-                bool evaled = false;
-                for(vector<Neuron>::iterator out_n = y.begin(); out_n != y.end(); ++out_n){
-                    trueVal = out_n->evalNeuron();
-                    if(trueVal == 1 && evaled == false){
-                        //mirar aqui la condicion habitual
-                    }
-                        
-                }
-                
-                ndata++;
-            }
-	}
-        
-        
-	void test(vector<float> v){
-                
-	}
-        
-        void train(){
-		//si es simple, simple_train
-		if(z.size() == 0) return simple_train();
-		//si es complejo, multi_train
-		else multi_train();
+
 	}
 
 private:
@@ -116,8 +90,6 @@ private:
 	std::vector<Link> l_y;
 	//data for training
 	Test training_data;
-        //data for test
-        vector<vector> testing_data;
 	//number of atts and classes
 	int num_att;
 	int num_class;
@@ -130,23 +102,21 @@ private:
 		//el numero de clases es el tamanio de un dato, menos numAtt
 		bool stop_cond = false;
 		while(!stop_cond){
-                        stop_cond = false;
-			int numOk=0;
+			int numOK=0;
 			int numInstance=0;
-			for (vector<>::iterator caso = training_data.begin(); caso != training_data.end(); ++caso)
+			for (std::vector<Caso>::iterator caso = training_data.begin(); caso != training_data.end(); ++caso)
 			{
 				numInstance++;
 				//por cada caso de entrenamiento, inicializar neuronas
 				int i=0;
 				//TODO comprobar estos dos
-                                
-				for (std::vector<float>::iterator att = ((Caso)caso).first.begin(); att != ((Caso)caso).first.end(); ++att)
+				for (std::vector<vector<float>::iterator att = caso->first.begin(); att != caso->first.end(); ++att)
 				{
-					input[i].in_value = *att;
+					input[i].in_value = att;
 				}
 				//e interpretamos la clase
 				int clase=0;
-				for (std::vector<int>::iterator citr = ((Caso)caso).second.begin(); citr != ((Caso)caso).second.end(); ++citr)
+				for (std::vector<vector<int>::iterator citr = caso->second.begin(); citr != caso->second.end(); ++citr)
 				{
 					if(*citr == 1) return;
 					clase++;
@@ -163,7 +133,7 @@ private:
 				int cnt = 0;
 				for (std::vector<Neuron>::iterator out = y.begin(); out != y.end(); ++out)
 				{
-					float sal = out->evalNeuron(sigmoidal);
+					float sal = ((Neuron*)(out))->evalNeuron(identity);
 					if(sal == 1f){
 						if(pred_class != -1){
 							pred_class = -2;
@@ -176,14 +146,12 @@ private:
 				}
 
 				if(pred_class == clase){
-					numOk++;
-                                        stop_cond = true;
+					numOK++;
 					//acierto. no entrena
 				}else{
 					//error
 					for (vector<Link>::iterator links = l_y.begin(); links != l_y.end(); ++links){
-						links->weight = links->weight 
-                                                        + learn_rate*links->from->in_value;
+						links->weight = links->weight + learn_rate*links->from.in_value;
 					}
 				}
 
@@ -192,11 +160,7 @@ private:
 		}
 	}
 
-	float sigmoidal(float in_value){
-		if(in_value > threshold) return 1;
-		else if(in_value <= -threshold) return 0;
-		else return -1;	
+	float identity(float in_value){
+		return in_value;
 	}
-        
-        
 };
