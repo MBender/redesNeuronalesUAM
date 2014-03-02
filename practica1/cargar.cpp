@@ -6,11 +6,7 @@
 #include <ctime>
 #include <algorithm>
 #include <cstdlib> 
-
-using namespace std;
-
-typedef pair<vector<float>, vector<int> > Caso;
-typedef vector<Caso> Test;
+#include "cargar.h"
 
 Test cargar(string archivo) {
 	ifstream leer;

@@ -6,44 +6,29 @@
 **/
 #include <stdio.h>
 #include <stdlib.h>
-//#include "neuron.h"
+#include "neuron.h"
 
 using namespace std;
 
-class Neuron{
-public:
-	int nlayer; //generable not needed
-	float in_value; //only usable in some algorithms, or biases
-	float out_value;
+Neuron::Neuron(){
+	in_value = 0;
+	out_value = 0;
+}
 
-	float evalNeuron(float(*eval)(float)){
-		out_value = eval(in_value);
-		return out_value;
-	}
-};
+float Neuron::evalNeuron(void* context, float & threshold, float(*eval)(void*, float, float)){
+	out_value = eval(context, in_value, threshold);
+	return out_value;
+}
 
 
-class link{
+//class Link
+Link::Link(){
+	weight = rand();
+}
 
-public:
+float Link::sumLink(){
+	to->in_value = from->out_value * weight;
+	return from->out_value * weight;
+}
 
-
-};
-
-class Link{
-public:
-
-	Link(){
-		weight = rand();
-	}
-
-	float weight;
-	Neuron *from;
-	Neuron *to;
-
-	float sumLink(){
-		to->in_value = from->out_value * weight;
-	}
-
-};
 
