@@ -77,7 +77,35 @@
 		}
 	}
 
+	void adaline::test(Test data_testing){
+		testing_data = data_testing;
+		ofstream of("salida_adaline.txt");
+        int ndata = 0;
+        int countOK = 0;
+        for(Test::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
+        	y[0].in_value = 0;
+        	int cin = 0;
+            for(vector<float>::iterator in_n = i->first.begin(); in_n != i->first.end(); ++in_n){
+                input[cin++].in_value = in_n[0];
+            }
+            for(vector<Link>::iterator in_link = l_y.begin(); in_link != l_y.end(); ++in_link){
+                in_link[0].sumLink();
+            }
+            int clase = 0;
+            
+            float sal = y[0].evalNeuron(0, threshold, &sigmoidal);
+            if(sal == 1){
+                clase = 1;
+            }else if(sal == -1){
+                clase = 2;
+            }
 
+            //escribe la clase predicha en un fichero.
+            of << clase << endl;
+            ndata++;
+        }
+        of.close();
+	}
 
 
 	void adaline::test(){
@@ -125,9 +153,13 @@
 		return simple_train();
 	}
 
-	void adaline::simple_train(){
+	void adaline::train(Test data_training){
+		training_data = data_training;
+		return simple_train();
+	}
 
-		cout << "iniciando adaline simple";
+	void adaline::simple_train(){
+		ofstream of_stat("adaline_train_stat.txt");
 		//el numero de clases es el tamanio de un dato, menos numAtt
 		bool stop_cond = false;
 		bool error = false;
@@ -192,12 +224,13 @@
 
 
 			}
-			if(epoch % 5 == 0)
-				cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
-            epoch++;
-           // if(numOk == (training_data.size()-1)) break;
-            //if(error == false) break;
+			//if(epoch % 5 == 0)
+			//	cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
+            
+            of_stat << epoch << "\t" << 100-((double)(numOk)/training_data.size())*100 << endl;
+            if(error == false) break;
             if(epoch > 10000) break;
+            epoch++;
 		}
 			cout << "\ntotal epocas :" << epoch << "\n";
                 //print epoch counter

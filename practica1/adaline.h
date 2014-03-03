@@ -22,10 +22,11 @@ public:
 
 	void test();
         
-        
-	void test(vector<float> v);
+	void test(Test data_testing);
         
     void train();
+
+    void train(Test data_training);
 
 private:
 
