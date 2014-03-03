@@ -169,6 +169,9 @@
             error = false;
 			int numOk=0;
 			int numInstance=0;
+			float ecm_sum = 0;
+            float ecm_media = 0;
+
 			for (vector<Caso>::iterator caso = training_data.begin(); caso != training_data.end(); ++caso)
 			{
 				y[0].in_value = 0;
@@ -203,11 +206,11 @@
                 }else if(sal == -1){
                     pred_class = 2;
                 }
-
+                //ecm_sum += sal;
                 int t = 0;
 						if(clase == 1) t = 1;
 						else t = -1;
-
+				ecm_sum += (clase - pred_class);
 				if(pred_class == clase){
 					numOk++;
                     for (vector<Link>::iterator links = l_y.begin(); links != l_y.end(); ++links){
@@ -226,8 +229,9 @@
 			}
 			//if(epoch % 5 == 0)
 			//	cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
-            
-            of_stat << epoch << "\t" << 100-((double)(numOk)/training_data.size())*100 << endl;
+
+            float ecm = (ecm_sum*ecm_sum)/(2*training_data.size());
+            of_stat << epoch << "\t" << 100-((double)(numOk)/training_data.size())*100 << "\t" << ecm << endl;
             if(error == false) break;
             if(epoch > 10000) break;
             epoch++;

@@ -165,7 +165,9 @@
 		bool stop_cond = false;
 		bool error = false;
                 int epoch = 0;
-		while(!stop_cond){
+   		while(!stop_cond){
+   			float ecm_sum = 0;
+
             stop_cond = false;
             error = false;
 			int numOk=0;
@@ -205,6 +207,7 @@
                     pred_class = 2;
                 }
 
+                ecm_sum += (clase-pred_class);
 
 				if(pred_class == clase){
 					numOk++;
@@ -226,8 +229,9 @@
 
 			}
 			//if(epoch % 5 == 0)
+			ecm_sum = (ecm_sum*ecm_sum)/(2*training_data.size());
 				//cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
-            of_stat << epoch << "\t" << 100 - ((double)(numOk)/training_data.size())*100 << endl;
+            of_stat << epoch << "\t" << 100 - ((double)(numOk)/training_data.size())*100 << "\t" << ecm_sum << endl;
            // if(numOk == (training_data.size()-1)) break;
             if(error == false) break;
             if(epoch > 10000) break;
