@@ -1,40 +1,51 @@
-#include <vector>
-#include "cargar.cpp"
+#include "adaline.h"
+#include <stdio.h>
+//class adaline
 
-using namespace std;
+	float sigmoidal(void* context, float in_value, float threshold){
+		if(in_value >= threshold) return 1;
+		else if(in_value < -threshold) return -1;
+		else return 0;	
+	}
+        
+        //usamos esto, porque suponemos multiclase, no solo biclase, y con multiples neuronas de salida
+    float sigmoidal_simple(float in_value, float threshold){
+		if(in_value > threshold) return 1;
+		else if(in_value <= threshold) return 0;
+	}
 
-class adaline{
+	adaline::adaline(int num_hidden, Test data_training, float rate){
 
-public:
-	adaline(int num_hidden, Test data_training, float rate){
+		learn_rate = 1;
+
 		num_att = data_training[0].first.size();
 		num_class = data_training[0].second.size();
 
-                int c = 0;
-                for(; c < data_training.size()*(2/3); c++){
-                    training_data.push_back(data_training[c]);
-                }
-                for(; c < data_training.size(); c++){
-                    testing_data.push_back(data_training[c]);
-                }
-		//create the neurons
+        int c = 0;
+        float top = data_training.size()*2/3;
+        for(c=0; c < top; c++){
+            training_data.push_back(data_training[c]);
+        }
+        for(; c < data_training.size(); c++){
+            testing_data.push_back(data_training[c]);
+        }
 			//input
 		for (int i = 0; i < num_att; ++i)
 		{
-			input.push_back(new Neuron());
+			input.push_back(Neuron());
 		}
 		//add a Bias
-			Neuron in_bias = new Neuron();
-			in_bias.in_value = 1;
-			input.push_back(in_bias);
+		Neuron in_bias;
+		in_bias.in_value = 1;
+		input.push_back(in_bias);
 			//hidden
 		for (int i = 0; i < num_hidden; ++i)
 		{
-			z.push_back(new Neuron());
+			z.push_back(Neuron());
 		}
 		//if there is a hidden layer, dont add bias neuron
 		if(z.size()!=0){
-			Neuron z_bias = new Neuron();
+			Neuron z_bias;
 			z_bias.in_value = 1;
 			z.push_back(z_bias);
 		}
@@ -44,20 +55,21 @@ public:
                 //solo una neurona de salida
 		//for (int i = 0; i < num_class; ++i)
 		//{
-                y.push_back(new Neuron());
+		threshold = 2;
+        y.push_back(Neuron());
 		//}
 
 		//create the links
 		//TODO comprobar estos for
-		if(z.size()==0){//if it is a single perceptron
+		if(z.size()==0){//if it is a single adaline
 			//output
 			for (std::vector<Neuron>::iterator i = input.begin(); i != input.end(); ++i)
 			{
 				for (std::vector<Neuron>::iterator j = y.begin(); j != y.end(); ++j)
 				{
-					Link l = new Link();
-					l.from = i;
-					l.to = j;
+					Link l;
+					l.from = &i[0];
+					l.to = &j[0];
 					l_y.push_back(l);
 				}
 				
@@ -65,28 +77,24 @@ public:
 		}
 	}
 
-	
-
-	
-
-	void multi_train(){
-
-	};
 
 
-	void test(){
+
+	void adaline::test(){
             int ndata = 0;
             int countOK = 0;
             for(Test::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
-                for(vector<Neuron>::iterator in_n = input.begin(); in_n != input.end(); ++in_n){
-                    in_n->in_value= *i[ndata];
+            	y[0].in_value = 0;
+            	int cin = 0;
+                for(vector<float>::iterator in_n = i->first.begin(); in_n != i->first.end(); ++in_n){
+                    input[cin++].in_value = in_n[0];
                 }
-                for(vector<Link>::iterator in_link = l_z.begin(); in_link != l_z.end(); ++in_link){
-                    in_link->sumLink();
+                for(vector<Link>::iterator in_link = l_y.begin(); in_link != l_y.end(); ++in_link){
+                    in_link[0].sumLink();
                 }
                 int clase = 0;
-                int c = 0;
-                float sal = y[0]->evalNeuron(sigmoidal);
+                
+                float sal = y[0].evalNeuron(0, threshold, &sigmoidal);
                 if(sal == 1){
                     clase = 1;
                 }else if(sal == -1){
@@ -94,10 +102,11 @@ public:
                 }
                 //now, check the correctness of classifier
                 int trueClass = 0;
-                c = 1;
+                int c = 1;
                 for(vector<int>::iterator class_i = i->second.begin(); class_i != i->second.end(); ++class_i){
-                    if(*(class_i)==1){
+                    if((class_i[0])==1){
                         trueClass = c;
+                        break;
                     }
                     c++;
                 }
@@ -108,67 +117,41 @@ public:
                 }
                 ndata++;
             }
+            cout << "Porcentaje de acierto:" << ((double)(countOK)/testing_data.size())*100 << "\n";
 	}
+     
         
-        
-	void test(vector<float> v){
-                
-	}
-        
-        void train(){
-		//si es simple, simple_train
-		if(z.size() == 0) return simple_train();
-		//si es complejo, multi_train
-		else multi_train();
+    void adaline::train(){
+		return simple_train();
 	}
 
-private:
+	void adaline::simple_train(){
 
-	/*The elements of the perceptron*/
-	//neurons
-	std::vector<Neuron> input; 
-	std::vector<Neuron> z;
-	std::vector<Neuron> y;
-	//links
-	//std::std::vector<Link> l_input;
-	std::vector<Link> l_z;
-	std::vector<Link> l_y;
-	//data for training
-	Test training_data;
-        //data for test
-        Test testing_data;
-	//number of atts and classes
-	int num_att;
-	int num_class;
-	//learning rate
-	float learn_rate;
-	//umbral
-	float threshold;
-
-	void simple_train(){
+		cout << "iniciando adaline simple";
 		//el numero de clases es el tamanio de un dato, menos numAtt
 		bool stop_cond = false;
-                int epoch = 0;
+		bool error = false;
+        int epoch = 0;
 		while(!stop_cond){
-                        stop_cond = false;
+            stop_cond = false;
+            error = false;
 			int numOk=0;
 			int numInstance=0;
-			for (vector<>::iterator caso = training_data.begin(); caso != training_data.end(); ++caso)
+			for (vector<Caso>::iterator caso = training_data.begin(); caso != training_data.end(); ++caso)
 			{
+				y[0].in_value = 0;
 				numInstance++;
 				//por cada caso de entrenamiento, inicializar neuronas
-				int i=0;
-				//TODO comprobar estos dos
-                                
-				for (std::vector<float>::iterator att = ((Caso)caso).first.begin(); att != ((Caso)caso).first.end(); ++att)
+				int i=0;                   
+				for (std::vector<float>::iterator att = caso[0].first.begin(); att != caso[0].first.end(); ++att)
 				{
-					input[i].in_value = *att;
+					input[i++].in_value = att[0];
 				}
 				//e interpretamos la clase
-				int clase=0;
-				for (std::vector<int>::iterator citr = ((Caso)caso).second.begin(); citr != ((Caso)caso).second.end(); ++citr)
+				int clase=1;
+				for (std::vector<int>::iterator citr = caso[0].second.begin(); citr != caso[0].second.end(); ++citr)
 				{
-					if(*citr == 1) return;
+					if(citr[0] == 1) break;
 					clase++;
 				}
 
@@ -181,65 +164,45 @@ private:
 					//calculamos las salidas, y vemos la clase respuesta
 				int pred_class = 0;
 				int cnt = 0;
-                                //solo una neurona de salida en este caso, 2 clases (codigo simple)
-                                float sal = y[0]->evalNeuron(sigmoidal);
-                                if(sal == 1){
-                                    pred_class = 1;
-                                }else if(sal == -1){
-                                    pred_class = 2;
-                                }
-                                
-                                /* este caso es para multiples neuronas de salida, por simplicidad de codigo, queda descartado
-				for (std::vector<Neuron>::iterator out = y.begin(); out != y.end(); ++out)
-				{
-					float sal = out->evalNeuron(sigmoidal_simple);
-					if(sal == 1){
-						if(pred_class != -1){
-							pred_class = -2;
-							continue;
-						}else{
-							pred_class = cnt;
-						}
-					} 
-					cnt++;
-				}*/
+                //solo una neurona de salida en este caso, 2 clases (codigo simple)
+                float sal = y[0].evalNeuron(0, threshold, &sigmoidal);
+                if(sal == 1){
+                    pred_class = 1;
+                }else if(sal == -1){
+                    pred_class = 2;
+                }
+
+                int t = 0;
+						if(clase == 1) t = 1;
+						else t = -1;
 
 				if(pred_class == clase){
 					numOk++;
-                                        stop_cond = true;
-                                        for (vector<Link>::iterator links = l_y.begin(); links != l_y.end(); ++links){
-						links->weight = links->weight 
-                                                        + learn_rate*(1-(links->from->in_value));
+                    for (vector<Link>::iterator links = l_y.begin(); links != l_y.end(); ++links){
+						links->weight += learn_rate*((t-sal)*(links->from->in_value));
 					}
-					//acierto. no entrena
+					//acierto.
 				}else{
+					error = true;
 					//error
 					for (vector<Link>::iterator links = l_y.begin(); links != l_y.end(); ++links){
-						links->weight = links->weight 
-                                                        + learn_rate*(0-(links->from->in_value));
+						links->weight += learn_rate*((t-sal)*(links->from->in_value));
 					}
 				}
 
 
 			}
-                        epoch++;
+			if(epoch % 5 == 0)
+				cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
+            epoch++;
+           // if(numOk == (training_data.size()-1)) break;
+            //if(error == false) break;
+            if(epoch > 10000) break;
 		}
+			cout << "\ntotal epocas :" << epoch << "\n";
                 //print epoch counter
 	}
 
-	float sigmoidal(float in_value){
-		if(in_value > threshold) return 1;
-		else if(in_value <= -threshold) return 0;
-		else return -1;	
-	}
+	
         
-        //usamos esto, porque suponemos multiclase, no solo biclase, y con multiples neuronas de salida
-        float sigmoidal_simple(float in_value){
-		if(in_value > threshold) return 1;
-		else if(in_value <= threshold) return 0;
-	}
-        
-        float identity(float in_value){
-            return in_value;
-        }
-};
+  
