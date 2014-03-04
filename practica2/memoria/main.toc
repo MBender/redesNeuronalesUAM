@@ -1,0 +1,15 @@
+\select@language {spanish}
+\contentsline {section}{Introducci\IeC {\'o}n}{1}{section*.3}
+\contentsline {section}{\numberline {1}Transformada r\IeC {\'a}pida de Fourier con recursi\IeC {\'o}n}{2}{section.1}
+\contentsline {section}{\numberline {2}Perceptr\IeC {\'o}n y Adaline}{3}{section.2}
+\contentsline {subsection}{\numberline {2.1}Perceptr\IeC {\'o}n}{3}{subsection.2.1}
+\contentsline {subsubsection}{\numberline {2.1.1}Introducci\IeC {\'o}n y dise\IeC {\~n}o}{3}{subsubsection.2.1.1}
+\contentsline {subsubsection}{\numberline {2.1.2}Descripci\IeC {\'o}n de los resultados}{3}{subsubsection.2.1.2}
+\contentsline {subsection}{\numberline {2.2}Adaline}{4}{subsection.2.2}
+\contentsline {subsubsection}{\numberline {2.2.1}Introducci\IeC {\'o}n y dise\IeC {\~n}o}{4}{subsubsection.2.2.1}
+\contentsline {subsubsection}{\numberline {2.2.2}Descripci\IeC {\'o}n de los resultados}{5}{subsubsection.2.2.2}
+\contentsline {subsection}{\numberline {2.3}Par\IeC {\'a}metros de aprendizaje}{5}{subsection.2.3}
+\contentsline {subsection}{\numberline {2.4}Entrenamiento-test completo}{6}{subsection.2.4}
+\contentsline {subsection}{\numberline {2.5}Clasificaci\IeC {\'o}n de datos desconocidos}{8}{subsection.2.5}
+\contentsline {subsection}{\numberline {2.6}A\IeC {\~n}adir par\IeC {\'a}metros no lineales}{9}{subsection.2.6}
+\contentsline {section}{Conclusiones}{10}{section*.18}
