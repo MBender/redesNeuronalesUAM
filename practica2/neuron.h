@@ -9,6 +9,7 @@ public:
 	int nlayer; 
 	float in_value; 
 	float out_value;
+	float delta_value;
 	Neuron();
 	float evalNeuron(void* context, float & threshold, float(*eval)(void*, float, float));
 };

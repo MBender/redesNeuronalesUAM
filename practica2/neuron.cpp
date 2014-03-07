@@ -13,6 +13,7 @@ using namespace std;
 Neuron::Neuron(){
 	in_value = 0;
 	out_value = 0;
+	delta_value = 0;
 }
 
 float Neuron::evalNeuron(void* context, float & threshold, float(*eval)(void*, float, float)){
