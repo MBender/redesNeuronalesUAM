@@ -12,5 +12,5 @@ using namespace std;
 typedef pair<vector<float>, vector<int> > Caso;
 typedef vector<Caso> Test;
  
- Test cargar(string archivo);
- Test cargar_static(string archivo);
+Test cargar(string archivo);
+Test cargar_static(string archivo);

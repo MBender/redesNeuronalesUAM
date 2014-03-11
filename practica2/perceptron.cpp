@@ -56,8 +56,10 @@
 		//for (int i = 0; i < num_class; ++i)
 		//{
 		threshold = 2;
-        y.push_back(Neuron());
-		//}
+        for(int i = 0; i < data_training[0].second.size();i++){
+        	y.push_back(Neuron());
+        }
+		//}""
 
 		//create the links
 		//TODO comprobar estos for
@@ -73,6 +75,29 @@
 					l_y.push_back(l);
 				}
 				
+			}
+		}else{ //multicapa
+			for (std::vector<Neuron>::iterator i = input.begin(); i != input.end(); ++i)
+			{
+				for (std::vector<Neuron>::iterator j = z.begin(); j != z.end(); ++j)
+				{
+					Link l;
+					l.from = &i[0];
+					l.to = &j[0];
+					l_z.push_back(l);
+
+				}
+			}
+
+			for (std::vector<Neuron>::iterator a = z.begin(); a != z.end(); ++a)
+			{
+				for (std::vector<Neuron>::iterator b = y.begin(); b != y.end(); ++b)
+				{
+					Link l;
+					l.from = &a[0];
+					l.to = &b[0];
+					l_z.push_back(l);
+				}
 			}
 		}
 	}
@@ -98,7 +123,7 @@
                 if(sal == 1){
                     clase = 1;
                 }else if(sal == -1){
-                    clase = 2;
+                    clase = 2; 
                 }
 
                 //escribe la clase predicha en un fichero.
@@ -224,6 +249,135 @@
 						links->weight += learn_rate*t*links->from->in_value; 
 						//cout << "var: "<< links->weight<< "\n";
 					}
+				}
+
+
+			}
+			//if(epoch % 5 == 0)
+			ecm_sum = (ecm_sum*ecm_sum)/(2*training_data.size());
+				//cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
+            of_stat << epoch << "\t" << 100 - ((double)(numOk)/training_data.size())*100 << "\t" << ecm_sum << endl;
+           // if(numOk == (training_data.size()-1)) break;
+            if(error == false) break;
+            if(epoch > 10000) break;
+            epoch++;
+		}
+			cout << "\ntotal epocas :" << epoch << "\n";
+			of_stat.close();
+                //print epoch counter
+	}
+
+
+
+	void perceptron::multi_train(){
+		ofstream of_stat("perceptron_train_stat.txt");
+		cout << "iniciando perceptron simple";
+		//el numero de clases es el tamanio de un dato, menos numAtt
+		bool stop_cond = false;
+		bool error = false;
+                int epoch = 0;
+   		while(!stop_cond){
+   			float ecm_sum = 0;
+
+            stop_cond = false;
+            error = false;
+			int numOk=0;
+			int numInstance=0;
+			for (vector<Caso>::iterator caso = training_data.begin(); caso != training_data.end(); ++caso)
+			{
+				for (std::vector<Neuron>::iterator i = y.begin(); i != y.end(); ++i)
+				{
+					i[0].in_value=0;
+				}
+
+				numInstance++;
+				//por cada caso de entrenamiento, inicializar neuronas
+				int i=0;                   
+				for (std::vector<float>::iterator att = caso[0].first.begin(); att != caso[0].first.end(); ++att)
+				{
+					input[i++].in_value = att[0];
+				}
+				//e interpretamos la clase
+				int clase=1;
+				for (std::vector<int>::iterator citr = caso[0].second.begin(); citr != caso[0].second.end(); ++citr)
+				{
+					if(citr[0] == 1) break;
+					clase++;
+				}
+
+				//ahora, procedemos a calcular las salidas
+					//propagamos las entradas
+				for (std::vector<Link>::iterator link = l_z.begin(); link != l_y.end(); ++link)
+				{
+					link->sumLink();
+				}
+					//calculamos valor de capa media
+				for (std::vector<Neuron>::iterator 	neuz = 	z.begin(); 	neuz != 	z.end(); ++	neuz)
+				{
+						neuz[0].evalNeuron(0, threshold, &sigmoidal);
+				}
+					//propagamos a la salida
+				for (std::vector<Link>::iterator 	link_y = 	l_y.begin(); 	link_y != 	l_y.end(); ++	link_y)
+				{
+						link_y[0].sumLink();
+				}
+
+					//calculamos las salidas, y vemos la clase respuesta
+				int pred_class = -1;
+				int cnt = 0;
+
+                //solo una neurona de salida en este caso, 2 clases (codigo simple)
+				//tenemos que ver cual es la neurona activada, en caso de dos, dar error
+				for (std::vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy)
+				{
+
+						if(neuy[0].evalNeuron(0,threshold,&sigmoidal)==1){
+							if(pred_class != -1){
+								pred_class = -1;
+								break;
+							}
+							pred_class = cnt;
+						}
+						cnt++;
+				}
+                ecm_sum += (clase-pred_class);
+
+				if(pred_class == clase){
+					numOk++;
+				}
+					//BACKPROPAGATION:
+				//primero hallamos los delta value de las neuronas de salida
+				for (std::vector<Neuron>::iterator 	neuz = 	y.begin(); 	neuz != 	y.end(); ++	neuz)
+				{
+						neuz[0].delta_value = (clase - pred_class)*
+										((1-neuz[0].in_value)*(1+neuz[0].in_value)*pred_class);
+
+				}
+				//actualizamos pesos de salida
+				for (std::vector<Link>::iterator 	link_y = 	l_y.begin(); 	link_y != 	l_y.end(); ++	link_y)
+				{
+						link_y[0].weight += learn_rate*link_y[0].to->delta_value
+										*link_y[0].from->out_value;
+						link_y[0].from->delta_value=0;
+				}
+
+				//preparamos el sumatorio
+				for (std::vector<Link>::iterator link_y = l_y.begin(); link_y != l_y.end(); ++link_y)
+				{
+						link_y[0].from->delta_value+=link_y[0].to->delta_value * link_y[0].weight;
+				}
+				//ahora calculamos la rectificacion de delta para las capas intermedias
+				for (std::vector<Neuron>::iterator 	neuz = 	z.begin(); 	neuz != 	z.end(); ++	neuz)
+				{
+					neuz[0].delta_value *= (1-neuz[0].in_value)*(1+neuz[0].in_value)*neuz[0].out_value; 
+				}
+
+				//rectificamos pesos de entrada
+				for (std::vector<Link>::iterator 	link_z = 	l_z.begin(); 	link_z != 	l_z.end(); ++	link_z)
+				{
+						link_z[0].weight += learn_rate*link_z[0].to->delta_value
+										*link_z[0].from->out_value;
+						link_z[0].from->delta_value=0;
 				}
 
 
