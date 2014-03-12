@@ -19,10 +19,11 @@ public:
 
 	void multi_train();
 
+	void simple_train();
 
-	void test();
+	void simple_test();
         
-    void test(Test data_testing);
+    void simple_test(Test data_testing);
         
     void train();
 

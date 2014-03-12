@@ -101,9 +101,57 @@
 			}
 		}
 	}
+	void perceptron::multi_test(){
+		multi_test(testing_data);
+	}
+
+	void perceptron::multi_test(Test data_testing){
+            testing_data = data_testing;
+            ofstream of("salida_perceptron.txt");
+            int ndata = 0;
+            int countOK = 0;
+            for(Test::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
+
+                //Inicializamos las neuronas
+
+                int cin = 0;
+                for(vector<float>::iterator in_n = i->first.begin(); in_n != i->first.end(); ++in_n){
+                    input[cin++].in_value = in_n[0];
+                }
+                for(vector<Neuron> neuronasZ = z.begin(); neuronasZ != z.end(); neuronasZ++) {
+                    neuronasZ[0].in_value = 0;
+                }
+                for(vector<Neuron> neuronasY = y.begin(); neuronasY != y.end(); neuronasY++) {
+                    neuronasY[0].in_value = 0;
+                }
+
+                //Propagamos a la capa Z
+
+                for(vector<Link>::iterator in_link = l_z.begin(); in_link != l_z.end(); ++in_link){
+                    in_link[0].sumLink();
+                }
+
+                //Propagamos a la capa Y
+                for(vector<Link>::iterator in_link = l_y.begin(); in_link != l_y.end(); ++in_link){
+                    in_link[0].sumLink();
+                }
+
+                //Calcula las respuestas
+                vector<float> respuesta (y.size(), 0);
+                cin = 0;
+                for(vector<Neuron> neuronasY = y.begin(); neuronasY != y.end(); neuronasY++) {
+                    respuesta[cin++] = neuronasY[0].evalNeuron(0, threshold, &sigmoidal);
+                    of << respuesta[cin-1] << endl;
+                }
+
+                //escribe la clase predicha en un fichero.
+                ndata++;
+            }
+            of.close();
+    }
 
 
-	void perceptron::test(Test data_testing){
+	void perceptron::simple_test(Test data_testing){
 			testing_data = data_testing;
 			ofstream of("salida_perceptron.txt");
             int ndata = 0;
@@ -133,7 +181,7 @@
             of.close();
 	}
 
-	void perceptron::test(){
+	void perceptron::simple_test(){
             int ndata = 0;
             int countOK = 0;
             for(Test::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
