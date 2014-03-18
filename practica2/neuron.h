@@ -11,7 +11,7 @@ public:
 	float out_value;
 	float delta_value;
 	Neuron();
-	float evalNeuron(void* context, float & threshold, float(*eval)(void*, float, float));
+	float evalNeuron(void* context, float(*eval)(void*, float));
 };
 
 

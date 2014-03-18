@@ -2,17 +2,14 @@
 #include <stdio.h>
 //class perceptron
 
-	float sigmoidal(void* context, float in_value, float threshold){
-		if(in_value >= threshold) return 1;
-		else if(in_value < -threshold) return -1;
-		else return 0;	
+	float binary_sigmoidal(void* context, float in_value){
+		return 1/(1+exp(-in_value));
 	}
-        
-        //usamos esto, porque suponemos multiclase, no solo biclase, y con multiples neuronas de salida
-    float sigmoidal_simple(float in_value, float threshold){
-		if(in_value > threshold) return 1;
-		else if(in_value <= threshold) return 0;
+      
+    float bipolar_sigmoidal(void* context, float in_value){
+		return 2/(1+exp(-in_value)) - 1;
 	}
+
 
 	perceptron::perceptron(int num_hidden, Test data_training, float rate){
 
@@ -118,10 +115,10 @@
                 for(vector<float>::iterator in_n = i->first.begin(); in_n != i->first.end(); ++in_n){
                     input[cin++].in_value = in_n[0];
                 }
-                for(vector<Neuron> neuronasZ = z.begin(); neuronasZ != z.end(); neuronasZ++) {
+                for(vector<Neuron>::iterator neuronasZ = z.begin(); neuronasZ != z.end(); neuronasZ++) {
                     neuronasZ[0].in_value = 0;
                 }
-                for(vector<Neuron> neuronasY = y.begin(); neuronasY != y.end(); neuronasY++) {
+                for(vector<Neuron>::iterator neuronasY = y.begin(); neuronasY != y.end(); neuronasY++) {
                     neuronasY[0].in_value = 0;
                 }
 
@@ -139,8 +136,8 @@
                 //Calcula las respuestas
                 vector<float> respuesta (y.size(), 0);
                 cin = 0;
-                for(vector<Neuron> neuronasY = y.begin(); neuronasY != y.end(); neuronasY++) {
-                    respuesta[cin++] = neuronasY[0].evalNeuron(0, threshold, &sigmoidal);
+                for(vector<Neuron>::iterator neuronasY = y.begin(); neuronasY != y.end(); neuronasY++) {
+                    respuesta[cin++] = neuronasY[0].evalNeuron(0, &binary_sigmoidal);
                     of << respuesta[cin-1] << endl;
                 }
 
@@ -167,7 +164,7 @@
                 }
                 int clase = 0;
                 
-                float sal = y[0].evalNeuron(0, threshold, &sigmoidal);
+                float sal = y[0].evalNeuron(0, &binary_sigmoidal);
                 if(sal == 1){
                     clase = 1;
                 }else if(sal == -1){
@@ -195,7 +192,7 @@
                 }
                 int clase = 0;
                 
-                float sal = y[0].evalNeuron(0, threshold, &sigmoidal);
+                float sal = y[0].evalNeuron(0, &binary_sigmoidal);
                 if(sal == 1){
                     clase = 1;
                 }else if(sal == -1){
@@ -273,7 +270,7 @@
 				int pred_class = 0;
 				int cnt = 0;
                 //solo una neurona de salida en este caso, 2 clases (codigo simple)
-                float sal = y[0].evalNeuron(0, threshold, &sigmoidal);
+                float sal = y[0].evalNeuron(0, &binary_sigmoidal);
                 if(sal == 1){
                     pred_class = 1;
                 }else if(sal == -1){
@@ -362,7 +359,7 @@
 					//calculamos valor de capa media
 				for (std::vector<Neuron>::iterator 	neuz = 	z.begin(); 	neuz != 	z.end(); ++	neuz)
 				{
-						neuz[0].evalNeuron(0, threshold, &sigmoidal);
+						neuz[0].evalNeuron(0, &binary_sigmoidal);
 				}
 					//propagamos a la salida
 				for (std::vector<Link>::iterator 	link_y = 	l_y.begin(); 	link_y != 	l_y.end(); ++	link_y)
@@ -379,7 +376,7 @@
 				for (std::vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy)
 				{
 
-						if(neuy[0].evalNeuron(0,threshold,&sigmoidal)==1){
+						if(neuy[0].evalNeuron(0, &binary_sigmoidal)==1){
 							if(pred_class != -1){
 								pred_class = -1;
 								break;

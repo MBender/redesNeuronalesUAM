@@ -16,8 +16,8 @@ Neuron::Neuron(){
 	delta_value = 0;
 }
 
-float Neuron::evalNeuron(void* context, float & threshold, float(*eval)(void*, float, float)){
-	out_value = eval(context, in_value, threshold);
+float Neuron::evalNeuron(void* context, float(*eval)(void*, float)){
+	out_value = eval(context, in_value);
 	return out_value;
 }
 

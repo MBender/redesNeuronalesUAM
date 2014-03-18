@@ -4,10 +4,12 @@
 #include "neuron.h"
 #include "cargar.h"
 #include <vector>
+#include <math.h> 
 
 using namespace std;
 
-float sigmoidal(void* context, float in_value, float threshold);
+float binary_sigmoidal(void* context, float in_value);
+float bipolar_sigmoidal(void* context, float in_value);
 
 class perceptron{
 
@@ -24,6 +26,10 @@ public:
 	void simple_test();
         
     void simple_test(Test data_testing);
+
+    void multi_test();
+
+    void multi_test(Test);
         
     void train();
 
@@ -42,8 +48,8 @@ private:
 	std::vector<Link> l_y;
 	//data for training
 	Test training_data;
-        //data for test
-        Test testing_data;
+    //data for test
+    Test testing_data;
 	//number of atts and classes
 	int num_att;
 	int num_class;
@@ -51,13 +57,6 @@ private:
 	float learn_rate;
 	//umbral
 	float threshold;
-
-	void simple_train();
-
 	
-        
-    float sigmoidal_simple(float in_value, float threshold);
-        
-        
 };
 #endif
