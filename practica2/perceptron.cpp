@@ -40,7 +40,7 @@
 		{
 			z.push_back(Neuron());
 		}
-		//if there is a hidden layer, dont add bias neuron
+		//if there is not a hidden layer, dont add bias neuron
 		if(z.size()!=0){
 			Neuron z_bias;
 			z_bias.in_value = 1;
@@ -225,7 +225,8 @@
 
 	void perceptron::train(Test data_training){
 		training_data = data_training;
-		return simple_train();
+		if(z.size() == 0)return simple_train();
+		return multi_train();
 	}
 
 	void perceptron::simple_train(){
