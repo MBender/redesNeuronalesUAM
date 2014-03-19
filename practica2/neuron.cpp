@@ -26,10 +26,14 @@ float Neuron::evalNeuron(void* context, float(*eval)(void*, float)){
 Link::Link(){
 	//weight = ((double) rand() / (RAND_MAX) );
 	weight = 0;
+	to = NULL;
+	from = NULL;
 }
 
 float Link::sumLink(){
-	to->in_value += from->in_value * weight;
+	if(to == NULL || from == NULL) return 0; 
+	int value = from->in_value * weight;
+	to->in_value += value;
 	return from->in_value * weight;
 }
 
