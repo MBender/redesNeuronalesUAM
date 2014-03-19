@@ -93,7 +93,7 @@
 					Link l;
 					l.from = &a[0];
 					l.to = &b[0];
-					l_z.push_back(l);
+					l_y.push_back(l);
 				}
 			}
 		}
@@ -353,7 +353,7 @@
 
 				//ahora, procedemos a calcular las salidas
 					//propagamos las entradas
-				for (std::vector<Link>::iterator link = l_z.begin(); link != l_y.end(); ++link)
+				for (std::vector<Link>::iterator link = l_z.begin(); link != l_z.end(); ++link)
 				{
 					link->sumLink();
 				}
