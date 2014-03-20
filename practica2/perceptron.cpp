@@ -106,7 +106,6 @@
             testing_data = data_testing;
             ofstream of("salida_perceptron.txt");
             int ndata = 0;
-            int countOK = 0;
             for(Test::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
 
                 //Inicializamos las neuronas
@@ -136,11 +135,17 @@
                 //Calcula las respuestas
                 vector<float> respuesta (y.size(), 0);
                 cin = 0;
+                int max_out = 0;
+                float max_value = -1;
                 for(vector<Neuron>::iterator neuronasY = y.begin(); neuronasY != y.end(); neuronasY++) {
-                    respuesta[cin++] = neuronasY[0].evalNeuron(0, &binary_sigmoidal);
-                    of << respuesta[cin-1] << endl;
+                    neuronasY[0].evalNeuron(0, &binary_sigmoidal);
+                    if(neuronasY[0].out_value > max_value){
+                    	max_out = cin;
+                    	max_value = neuronasY[0].out_value;
+                    }
+                    cin++;
                 }
-
+                of << max_out << endl;
                 //escribe la clase predicha en un fichero.
                 ndata++;
             }
@@ -152,7 +157,6 @@
 			testing_data = data_testing;
 			ofstream of("salida_perceptron.txt");
             int ndata = 0;
-            int countOK = 0;
             for(Test::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
             	y[0].in_value = 0;
             	int cin = 0;
@@ -269,7 +273,6 @@
 				}
 					//calculamos las salidas, y vemos la clase respuesta
 				int pred_class = 0;
-				int cnt = 0;
                 //solo una neurona de salida en este caso, 2 clases (codigo simple)
                 float sal = y[0].evalNeuron(0, &binary_sigmoidal);
                 if(sal == 1){
@@ -287,8 +290,6 @@
 					//error
 					error = true;
 					for (vector<Link>::iterator links = l_y.begin(); links != l_y.end(); ++links){
-						//cout << "antes: "<<links->from->in_value << "\n";
-						double antes = links->weight;
 						int t = 0;
 						if(clase == 1) t = 1;
 						else t = -1;
@@ -323,7 +324,6 @@
 		bool error = false;
                 int epoch = 0;
    		while(!stop_cond){
-   			float ecm_sum = 0;
 
             stop_cond = false;
             error = false;
@@ -369,34 +369,38 @@
 				}
 
 					//calculamos las salidas, y vemos la clase respuesta
-				int pred_class = -1;
+				int pred_class = 0;
 				int cnt = 0;
-
-                //solo una neurona de salida en este caso, 2 clases (codigo simple)
+				float max_value = -9999;
 				//tenemos que ver cual es la neurona activada, en caso de dos, dar error
 				for (std::vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy)
 				{
-
-						if(neuy[0].evalNeuron(0, &binary_sigmoidal)==1){
-							if(pred_class != -1){
-								pred_class = -1;
-								break;
-							}
+						if(neuy[0].evalNeuron(0,&binary_sigmoidal)> max_value){
 							pred_class = cnt;
+							max_value = neuy[0].out_value;
 						}
 						cnt++;
 				}
-                ecm_sum += (clase-pred_class);
+				//cambiar el ecm
+                //ecm_sum += (clase-pred_class);
 
 				if(pred_class == clase){
 					numOk++;
-				}
+				}else{
+					error = true;
 					//BACKPROPAGATION:
+				}
+				cnt = 0;
 				//primero hallamos los delta value de las neuronas de salida
 				for (std::vector<Neuron>::iterator 	neuz = 	y.begin(); 	neuz != 	y.end(); ++	neuz)
 				{
-						neuz[0].delta_value = (clase - pred_class)*
-										((1-neuz[0].in_value)*(1+neuz[0].in_value)*pred_class);
+					float val = 0;
+					if(caso[0].second[cnt]==1) val = 0.9;
+					else val = -0.9;
+						neuz[0].delta_value = (val - neuz[0].out_value)*
+										((1-neuz[0].in_value)*(1+neuz[0].in_value)*neuz[0].out_value);
+					
+					cnt++;
 
 				}
 				//actualizamos pesos de salida
@@ -429,15 +433,15 @@
 
 			}
 			//if(epoch % 5 == 0)
-			ecm_sum = (ecm_sum*ecm_sum)/(2*training_data.size());
+			//ecm_sum = (ecm_sum*ecm_sum)/(2*training_data.size());
 				//cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
-            of_stat << epoch << "\t" << 100 - ((double)(numOk)/training_data.size())*100 << "\t" << ecm_sum << endl;
+            //of_stat << epoch << "\t" << 100 - ((double)(numOk)/training_data.size())*100 << "\t" << ecm_sum << endl;
            // if(numOk == (training_data.size()-1)) break;
             if(error == false) break;
-            if(epoch > 10000) break;
+            if(epoch > 1000) break;
             epoch++;
 		}
-			cout << "\ntotal epocas :" << epoch << "\n";
+			cout << "\ntotal epocas :" << epoch -1 << "\n";
 			of_stat.close();
                 //print epoch counter
 	}
