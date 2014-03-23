@@ -17,7 +17,7 @@ public:
 
 	perceptron(){ }
 
-	perceptron(int num_hidden, Test data_training, float rate);
+	perceptron(int num_hidden, Test data_training, float rate, bool shift);
 
 	void multi_train();
 

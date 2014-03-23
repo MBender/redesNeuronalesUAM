@@ -8,18 +8,10 @@ using namespace std;
 int main(int argc, char **argv){
 	if(argc > 1) {
 		//check parameters
-		Test t = cargar(argv[1]);
-		perceptron p ( 10 , t, 0.8);
+		Test t = cargar_static(argv[1]);
+		perceptron p ( 20 , t, 0.5, false);
 		p.train(t);
-		p.multi_test(t);
-		// if(argc == 2){
-		// 	p.train();
-		// 	p.test();
-	 //    }else if(argc == 3){
-	 //    	p.train(t);
-	 //    	t = cargar_static(argv[2]);
-		// 	p.test(t);
-	 //    }   
+		p.multi_test(t); //MAL. no necesita ahora mismo clasificar, solo necesita c
 	}
     return 0; 
 }

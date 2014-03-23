@@ -9,7 +9,7 @@
 		return ((float)2/(1+exp(-in_value))) - 1;
 	}
 
-	perceptron::perceptron(int num_hidden, Test data_training, float rate){
+	perceptron::perceptron(int num_hidden, Test data_training, float rate, bool shift){
 
 		learn_rate = 0.5;
 
@@ -18,12 +18,14 @@
 
         int c = 0;
         float top = data_training.size()*2/3;
-        for(c=0; c < top; c++){
-            training_data.push_back(data_training[c]);
-        }
-        for(; c < data_training.size(); c++){
-            testing_data.push_back(data_training[c]);
-        }
+	    if(shift==true){
+	        for(c=0; c < top; c++){
+	            training_data.push_back(data_training[c]);
+	        }
+	        for(; c < data_training.size(); c++){
+	            testing_data.push_back(data_training[c]);
+	        }
+	    }
 			//input
 		for (int i = 0; i < num_att; ++i)
 		{
@@ -144,10 +146,10 @@
                     	max_out = cin;
                     	max_value = neuronasY[0].out_value;
                     }
-                    cout << neuronasY[0].out_value << endl;
+                    //cout << neuronasY[0].out_value << endl;
                     cin++;
                 }
-                cout << "---------" << endl;
+                //cout << "---------" << endl;
                 of << max_out << endl;
                 //escribe la clase predicha en un fichero.
                 ndata++;
@@ -181,6 +183,7 @@
 			{
 				Caso instance = caso[0];
 				numInstance++;
+				//Se reinician los valores de entrada y regla delta
 				for (std::vector<Neuron>::iterator itr = y.begin(); itr != y.end(); ++itr)
 				{
 					itr[0].in_value=0;
@@ -195,10 +198,12 @@
 					itr[0].in_value = 0;
 				}
 
+				//FEEDFORWARD
 				//por cada caso de entrenamiento, inicializar neuronas
 				int i=0;                   
 				for (std::vector<float>::iterator att = instance.first.begin(); att != instance.first.end(); ++att)
 				{
+					input[i].in_value = att[0];
 					input[i].out_value = att[0];
 					i++;
 				}
@@ -210,7 +215,7 @@
 					if(citr[0] == 1) break;
 					clase++;
 				}
-
+				//cout << clase << endl;
 				//ahora, procedemos a calcular las salidas
 					//propagamos las entradas
 				for (std::vector<Link>::iterator link = l_z.begin(); link != l_z.end(); ++link)
@@ -236,15 +241,14 @@
 				//tenemos que ver cual es la neurona activada, en caso de dos, dar error
 				for (std::vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy)
 				{
-						if(neuy[0].evalNeuron(0,&bipolar_sigmoidal)> max_value){
+						if(neuy[0].evalNeuron(0,&bipolar_sigmoidal)>= max_value){
 							pred_class = cnt;
 							max_value = neuy[0].out_value;
 						}
 						//cout << neuy[0].out_value << "\n";
 						cnt++;		
 				}
-				//if(numInstance==6)return; //a partir de 4, se jode la cosa :( sale valor nan en neuy
-
+				//cout << pred_class << endl;
 				if(pred_class == clase){
 					numOk++;	
 				}else{
@@ -257,23 +261,23 @@
 				//primero hallamos los delta value de las neuronas de salida
 				cnt = 0;
 				float ecm_contr = 0;
-				for (std::vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy, cnt++)
+				for (vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy, cnt++)
 				{
-					float val = -0.90;
+					float val = -0.9;
 
-					if(instance.second[cnt]==1){
-						val = 0.90;
+					if(instance.second[cnt]==1){ //para ver si es valor teorico 1 o -1 la neurona de salidas
+						val = 0.9;
 					}
 
 					neuy[0].delta_value = (val-neuy[0].out_value)*
 									(0.5*(1-neuy[0].out_value)*(1+neuy[0].out_value));
-					ecm_contr = (val - neuy[0].out_value);
+					ecm_contr += (val - neuy[0].out_value);
 				}
 
 				sum_ecm += ecm_contr/y.size();
 				//vemos actualizacion pesos de salida
 				cnt = 0;
-				for (std::vector<Link>::iterator 	link_y = 	l_y.begin(); 	link_y != 	l_y.end(); ++link_y,cnt++)
+				for (vector<Link>::iterator 	link_y = 	l_y.begin(); 	link_y != 	l_y.end(); ++link_y,cnt++)
 				{
 						if(link_y[0].from->is_bias == 1){
 							link_y[0].weight_update += learn_rate*link_y[0].to->delta_value;
@@ -281,59 +285,40 @@
 							link_y[0].weight_update += learn_rate*link_y[0].to->delta_value
 										*link_y[0].from->out_value;
 						}
-
 				}
 
-				//preparamos el sumatorio
-
-				for (std::vector<Link>::iterator link_y = l_y.begin(); link_y != l_y.end(); ++link_y)
+				//propagamos el valor delta
+				for (vector<Link>::iterator link_y = l_y.begin(); link_y != l_y.end(); ++link_y)
 				{
-						link_y[0].from->delta_value+=link_y[0].to->delta_value * link_y[0].weight;
+						link_y[0].sumDelta();
 				}
 
 				//ahora calculamos la rectificacion de delta para las capas intermedias
 				for (std::vector<Neuron>::iterator 	neuz = 	z.begin(); 	neuz != 	z.end(); ++	neuz)
 				{
-					
-					neuz[0].delta_value *= 0.5*(1+neuz[0].out_value)*(1-neuz[0].out_value);
+					neuz[0].delta_value *= 0.5*(1+neuz[0].out_value)*(1-neuz[0].out_value); //1/2*[1-f(z_in)]*[1+f(z_in)]
 					//(1-neuz[0].in_value)*(1+neuz[0].in_value)*neuz[0].out_value; 
 				}
 				//rectificamos pesos de entrada
 				for (std::vector<Link>::iterator 	link_z = 	l_z.begin(); 	link_z != 	l_z.end(); ++	link_z)
 				{
-					
-
+					if(link_z[0].from->is_bias == 0)
 						link_z[0].weight_update += learn_rate*link_z[0].to->delta_value
-										*link_z[0].from->out_value;
-										if(isnan(link_z[0].weight_update)){
-						cout << "error en pesos z." << endl;
-						cout << link_z[0].to->out_value << endl;
-
-						cout << link_z[0].to->in_value << endl;
-						cout << link_z[0].to->delta_value << endl;
-						cout << 0.5*(1+link_z[0].to->in_value)*(1-link_z[0].to->in_value)*bipolar_sigmoidal(0,link_z[0].to->in_value) <<endl;
-						return;
-					}
+										*link_z[0].from->in_value;
+					else
+						link_z[0].weight_update += learn_rate*link_z[0].to->delta_value;
 						//cout << link_z[0].weight_update << "\n";
 				}
 
 				//rectificamos pesos
 				for (std::vector<Link>::iterator link_y = l_y.begin(); link_y != l_y.end(); ++link_y)
 				{
-					if(isnan(link_y[0].weight_update)){
-						cout << "error en pesos y." << endl;
-						return;
-					}
 					link_y[0].weight+=link_y[0].weight_update;
 					link_y[0].weight_update = 0;
 				}
 
 				for (std::vector<Link>::iterator link_z = l_z.begin(); link_z != l_z.end(); ++link_z)
 				{
-					if(isnan(link_z[0].weight_update)){
-						cout << "error en pesos z." << endl;
-						return;
-					}
 					link_z[0].weight+=link_z[0].weight_update;
 					link_z[0].weight_update = 0;
 				}
@@ -341,11 +326,11 @@
 			//if(epoch % 5 == 0)
 			sum_ecm = (sqrt(sum_ecm))/training_data.size();
 			//ecm_sum = (ecm_sum*ecm_sum)/(2*training_data.size());
-				//cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
+			cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
             //of_stat << epoch << "\t" << 100 - ((double)(numOk)/training_data.size())*100 << "\t" << ecm_sum << endl;
            // if(numOk == (training_data.size()-1)) break;
             if(error == false) break;
-            if(epoch >= 100) break;
+            if(epoch >= 1000) break;
             epoch++;
 		}
 			cout << "\ntotal epocas :" << epoch << "\n";

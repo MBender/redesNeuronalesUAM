@@ -27,7 +27,7 @@ public:
 	Neuron *to;
 
 	float sumLink();
-
+	float sumDelta();
 };
 
 #endif
