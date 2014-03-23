@@ -9,7 +9,7 @@ int main(int argc, char **argv){
 	if(argc > 1) {
 		//check parameters
 		Test t = cargar(argv[1]);
-		perceptron p ( 2*t[0].second.size() , t, 0.8);
+		perceptron p ( 10 , t, 0.8);
 		p.train(t);
 		p.multi_test(t);
 		// if(argc == 2){
