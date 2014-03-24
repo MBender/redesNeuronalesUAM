@@ -19,14 +19,15 @@ Neuron::Neuron(){
 
 float Neuron::evalNeuron(void* context, float(*eval)(void*, float)){
 	out_value = (float)eval(context, in_value);
+	//if(in_value != 0)cout << "eval: " << out_value<< " input: "<< in_value <<endl;
 	return out_value;
 }
 
 
 //class Link
 Link::Link(){
-	weight = ((double) rand() / (RAND_MAX) )*1.5;
-	weight-=1;	
+	weight = ((double) rand() / (RAND_MAX) );
+	weight-=0.5;	
 	weight_update = 0;
 	to = NULL;
 	from = NULL;
