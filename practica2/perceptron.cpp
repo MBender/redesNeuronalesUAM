@@ -6,7 +6,7 @@
 	}
       
     float bipolar_sigmoidal(void* context, float in_value){
-		return ((float)2/(1.0f+(float)exp(-in_value))) - 1.0f;
+		return ((float)2/(1+exp(-in_value))) - 1;
 	}
 
 	perceptron::perceptron(int num_hidden, Test data_training, float rate, bool shift){
@@ -112,7 +112,7 @@
 					if(citr[0] == 1) break;
 					clase++;
 				}
-				cout << "clase: " << clase << endl;
+				//cout << "clase: " << clase << endl;
 
                 //Inicializamos las neuronas
                 for (std::vector<Neuron>::iterator itr = y.begin(); itr != y.end(); ++itr)
@@ -140,7 +140,7 @@
                 //Calculamos salida de la capa Z
                 for (vector<Neuron>::iterator 	neuronasZ = z.begin(); 	neuronasZ != z.end(); ++neuronasZ)
 				{
-					if(neuronasZ[0].is_bias==1) neuronasZ[0].out_value = neuronasZ[0].in_value;
+					if(neuronasZ[0].is_bias==1) neuronasZ[0].out_value = 1;
 					else neuronasZ[0].evalNeuron(0, &bipolar_sigmoidal);
 				}
 
@@ -220,11 +220,20 @@
 				int i=0;                   
 				for (std::vector<float>::iterator att = instance.first.begin(); att != instance.first.end(); ++att)
 				{
-					input[i].in_value = att[0];
+					//input[i].in_value = att[0];
+
 					input[i].out_value = att[0];
 
 					i++;
+					if(input[i].is_bias==1){
+						//input[i++].out_value = 1;
+					}
 				}
+				//for (std::vector<Neuron>::iterator layer_in = input.begin(); layer_in != input.end(); ++layer_in)
+				//{
+				//	if(layer_in[0].is_bias == 1) layer_in[0].out_value = 1;
+				//	else layer_in[0].out_value = instance.first[i++];
+				//}
 
 				//e interpretamos la clase
 				int clase=1;
@@ -244,7 +253,7 @@
 					//calculamos valor de capa media, aplicando la bipolar para calcular la salida
 				for (std::vector<Neuron>::iterator 	neuz = 	z.begin(); 	neuz != 	z.end(); ++	neuz)
 				{
-					if(neuz[0].is_bias==1) neuz[0].out_value = neuz[0].in_value;
+					if(neuz[0].is_bias==1) neuz[0].out_value = 1; //si es el sesgo, solo ponemos 1 en salida
 					else neuz[0].evalNeuron(0, &bipolar_sigmoidal);
 					//cout << "salida neurona z" << neuz[0].out_value << endl;
 				}
@@ -351,7 +360,7 @@
             of_stat << epoch << "\t" << 100 - ((double)(numOk)/training_data.size())*100 << "\t" << sum_ecm << endl;
            // if(numOk == (training_data.size()-1)) break;
             if(error == false) break;
-            if(epoch >= 100) break;
+            if(epoch >= 1000) break;
             epoch++;
 		}
 			cout << "\ntotal epocas :" << epoch << "\n";
