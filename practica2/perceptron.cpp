@@ -278,7 +278,7 @@
 
 				}
 				if(pred_class == clase){
-					if(pred_class == 3)cout << "epoch: " << epoch << "pred: " <<pred_class << "value: "<< max_value<< endl;
+					//if(pred_class == 3)cout << "epoch: " << epoch << "pred: " <<pred_class << "value: "<< max_value<< endl;
 
 					numOk++;	
 				}else{
