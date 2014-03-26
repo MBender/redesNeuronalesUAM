@@ -13,7 +13,7 @@ int main(int argc, char **argv){
 	if(argc ==2) {
 		//check parameters
 		Test t = cargar(argv[1]);
-		perceptron p ( 10, 0.25,t, 0.5, true);
+		perceptron p ( 15, 0.25,t, 0.5, true, true);
 		p.train();
 		p.multi_test(); //MAL. no necesita ahora mismo clasificar, solo necesita c
 	}else if(argc==5){
@@ -26,7 +26,7 @@ int main(int argc, char **argv){
 		arg = argv[1];
 		int znum = ::atoi(arg.c_str());
 		Test t = cargar(argv[4]);
-		perceptron p ( znum, part,t, learn_rate, is_part);
+		perceptron p ( znum, part,t, learn_rate, is_part, false);
 		p.train();
 		if(is_part==false)p.multi_test(t);
 		else p.multi_test();
@@ -41,7 +41,7 @@ int main(int argc, char **argv){
 		arg = argv[1];
 		int znum = ::atoi(arg.c_str());
 		Test t = cargar(argv[4]);
-		perceptron p ( znum, part,t, learn_rate, is_part);
+		perceptron p ( znum, part,t, learn_rate, is_part, false);
 		p.train();
 		Test t2 = cargar(argv[5]);
 		//se testea con el propio archivo
