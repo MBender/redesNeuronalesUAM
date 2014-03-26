@@ -37,6 +37,8 @@ public:
 
 private:
 
+	int feedforwad(Caso instance);
+
 	/*The elements of the perceptron*/
 	//neurons
 	std::vector<Neuron> input; 

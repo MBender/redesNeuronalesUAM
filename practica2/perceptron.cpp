@@ -18,7 +18,6 @@
 
         int c = 0;
         float top = data_training.size()*porcentaje;
-        cerr << top << endl;
 	    if(shift){
 	        for(c=0; c < top; c++){
 	            training_data.push_back(data_training[c]);
@@ -27,8 +26,6 @@
 	            testing_data.push_back(data_training[c]);
 	        }
 	    }
-
-	    cerr << training_data.size() << endl;
 
 	    proc = vector<PreProcesador> (data_training[0].first.size(), PreProcesador());
 		if(normalizar) {
@@ -110,6 +107,60 @@
 		multi_test();
 	}
 
+	int perceptron::feedforwad(Caso instance) {
+//Inicializamos las neuronas
+                for (std::vector<Neuron>::iterator itr = y.begin(); itr != y.end(); ++itr)
+				{
+					itr[0].in_value=0;
+				}
+
+				for (std::vector<Neuron>::iterator itr = z.begin(); itr != z.end(); ++itr)
+				{
+					if(itr[0].is_bias == 1) continue;
+					itr[0].in_value = 0;
+				}
+
+                int cantIn = 0;
+                for(vector<float>::iterator in_n = instance.first.begin(); in_n != instance.first.end(); ++in_n){
+                    //input[cantIn].in_value = in_n[0];
+                    input[cantIn].out_value = proc[cantIn].preProcesar(in_n[0]);
+                    cantIn++;
+                }
+
+                //Propagamos a la capa Z
+                for(vector<Link>::iterator in_link = l_z.begin(); in_link != l_z.end(); ++in_link){
+                    in_link[0].sumLink();
+                }
+
+                //Calculamos salida de la capa Z
+                for (vector<Neuron>::iterator neuronasZ = z.begin(); 	neuronasZ != z.end(); ++neuronasZ)
+				{
+					if(neuronasZ[0].is_bias==1) neuronasZ[0].out_value = 1;
+					else neuronasZ[0].evalNeuron(0, &bipolar_sigmoidal);
+				}
+
+                //Propagamos a la capa Y
+                for(vector<Link>::iterator in_link = l_y.begin(); in_link != l_y.end(); ++in_link){
+                    in_link[0].sumLink();
+                }
+
+                //Calcula las respuestas
+                //vector<float> respuesta (y.size(), 0);
+				int cnt = 1;
+				float max_value = -9999;
+				//tenemos que ver cual es la neurona activada, en caso de dos, dar error
+				for (std::vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy)
+				{
+						if(neuy[0].evalNeuron(0,&bipolar_sigmoidal)>= max_value){
+							max_value = neuy[0].out_value;
+						}
+						//if(cnt==3)cout << "salida y:" << neuy[0].out_value << "\n";
+						cnt++;	
+
+				}
+				return cnt;
+	}
+
 	void perceptron::multi_test(){
             	for(Test::iterator it = training_data.begin(); it != training_data.end(); ++it) {
 		for(vector<float>::iterator it2 = it->first.begin(); it2 != it->first.end(); ++it2) {
@@ -147,7 +198,8 @@
 				//cout << "clase: " << clase << endl;
 
                 //Inicializamos las neuronas
-                for (std::vector<Neuron>::iterator itr = y.begin(); itr != y.end(); ++itr)
+                /*
+				for (std::vector<Neuron>::iterator itr = y.begin(); itr != y.end(); ++itr)
 				{
 					itr[0].in_value=0;
 				}
@@ -198,6 +250,9 @@
 						cnt++;	
 
 				}
+                */
+
+				int pred_class = feedforwad(instance);
 				if(clase == pred_class) nok++;
                 of << pred_class << endl;
                 //escribe la clase predicha en un fichero.
