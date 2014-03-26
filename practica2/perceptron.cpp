@@ -29,6 +29,7 @@
 	    	training_data = data_training;
 			//input
 	    }
+	    cout << training_data.size();
 		for (int i = 0; i < num_att; ++i)
 		{
 			input.push_back(Neuron());

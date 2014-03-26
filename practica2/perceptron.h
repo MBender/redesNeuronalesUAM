@@ -15,9 +15,8 @@ class perceptron{
 
 public:
 
-	perceptron(){ }
 
-	perceptron::perceptron(int num_hidden, float part,Test data_training, float rate, bool shift);
+	perceptron(int num_hidden, float part,Test data_training, float rate, bool shift);
 
 	void multi_train();
 
