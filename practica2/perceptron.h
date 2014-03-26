@@ -17,7 +17,7 @@ public:
 
 	perceptron(){ }
 
-	perceptron(int num_hidden, Test data_training, float rate, bool shift, float porcentaje, bool);
+	perceptron(int num_hidden, Test data_training, float rate, bool shift);
 
 	void multi_train();
 
@@ -36,8 +36,6 @@ public:
     void train(Test data_training);
 
 private:
-
-	int feedforwad(Caso instance);
 
 	/*The elements of the perceptron*/
 	//neurons
@@ -60,21 +58,5 @@ private:
 	//umbral
 	float threshold;
 	
-	class PreProcesador {
-		public:
-			PreProcesador() {};
-			virtual float preProcesar(float);
-	};
-
-	class Normalizador: public PreProcesador {
-			float desvioEstandar;
-			float promedio;
-		public:
-			Normalizador();
-			Normalizador(Test&, int);
-			float preProcesar(float);
-	};
-
-	vector<PreProcesador> proc;
 };
 #endif
