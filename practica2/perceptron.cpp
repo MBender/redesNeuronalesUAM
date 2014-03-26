@@ -9,7 +9,7 @@
 		return ((float)2/(1+exp(-in_value))) - 1;
 	}
 
-	perceptron::perceptron(int num_hidden, float part,Test data_training, float rate, bool shift){
+	perceptron::perceptron(int num_hidden, float part,Test data_training, float rate, bool shift, bool norm){
 
 		learn_rate = 0.5;
 
@@ -96,7 +96,32 @@
 			}
 		}
 
+
+		//Normalización
+		normalizar = norm;
+		if(normalizar) {
+			for(int indice = 0; indice < num_att; indice++) {
+				promedio.push_back(0);
+				for(Test::iterator it = testing_data.begin(); 	it != testing_data.end(); ++it) {
+					promedio[indice] += it->first[indice];
+				}
+				promedio[indice] /= testing_data.size();
+				float diffCuadradas = 0;
+				for(Test::iterator it = testing_data.begin(); 	it != testing_data.end(); ++it) {
+					diffCuadradas += (it->first[indice]-promedio[indice]) * (it->first[indice]-promedio[indice]);
+				}
+				diffCuadradas /= testing_data.size() - 1;
+				desvioEstandar.push_back (sqrt(diffCuadradas) );
+			}
+		}
 	}
+
+	float perceptron::preProcesar (float x, int indice) {
+		if(!normalizar)
+			return x;
+		return (x-promedio[indice])/desvioEstandar[indice];
+	}
+
 	void perceptron::multi_test(){
 		multi_test(testing_data);
 	}
@@ -132,7 +157,8 @@
                 int cin = 0;
                 for(vector<float>::iterator in_n = i->first.begin(); in_n != i->first.end(); ++in_n){
                     //input[cin].in_value = in_n[0];
-                    input[cin++].out_value = in_n[0];
+                    input[cin].out_value = preProcesar(in_n[0], cin);
+                    cin++;
                 }
 
                 //Propagamos a la capa Z
@@ -225,7 +251,7 @@
 				{
 					//input[i].in_value = att[0];
 
-					input[i].out_value = att[0];
+					input[i].out_value = preProcesar(att[0],i);
 
 					i++;
 					if(input[i].is_bias==1){

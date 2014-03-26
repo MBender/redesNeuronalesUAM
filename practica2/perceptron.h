@@ -16,7 +16,7 @@ class perceptron{
 public:
 
 
-	perceptron(int num_hidden, float part,Test data_training, float rate, bool shift);
+	perceptron(int num_hidden, float part,Test data_training, float rate, bool shift, bool norm);
 
 	void multi_train();
 
@@ -56,6 +56,12 @@ private:
 	float learn_rate;
 	//umbral
 	float threshold;
+	//Normalizar
+	bool normalizar;
 	
+	vector<float> promedio;
+	vector<float> desvioEstandar;
+
+	float preProcesar(float, int);
 };
 #endif
