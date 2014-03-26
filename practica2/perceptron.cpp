@@ -9,7 +9,7 @@
 		return ((float)2/(1+exp(-in_value))) - 1;
 	}
 
-	perceptron::perceptron(int num_hidden, Test data_training, float rate, bool shift){
+	perceptron::perceptron(int num_hidden, float part,Test data_training, float rate, bool shift){
 
 		learn_rate = 0.5;
 
@@ -17,16 +17,18 @@
 		num_class = data_training[0].second.size();
 
         int c = 0;
-        float top = data_training.size()*2/3;
-	    if(shift==true){
+        float top = data_training.size()*part;
+	    if(shift){
 	        for(c=0; c < top; c++){
 	            training_data.push_back(data_training[c]);
 	        }
 	        for(; c < data_training.size(); c++){
 	            testing_data.push_back(data_training[c]);
 	        }
-	    }
+	    }else{
+	    	training_data = data_training;
 			//input
+	    }
 		for (int i = 0; i < num_att; ++i)
 		{
 			input.push_back(Neuron());
