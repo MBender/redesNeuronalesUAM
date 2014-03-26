@@ -9,7 +9,7 @@
 		return ((float)2/(1+exp(-in_value))) - 1;
 	}
 
-	perceptron::perceptron(int num_hidden, Test data_training, float rate, bool shift){
+	perceptron::perceptron(int num_hidden, Test data_training, float rate, bool shift, float porcentaje, bool normalizar){
 
 		learn_rate = 0.5;
 
@@ -17,8 +17,9 @@
 		num_class = data_training[0].second.size();
 
         int c = 0;
-        float top = data_training.size()*2/3;
-	    if(shift==true){
+        float top = data_training.size()*porcentaje;
+        cerr << top << endl;
+	    if(shift){
 	        for(c=0; c < top; c++){
 	            training_data.push_back(data_training[c]);
 	        }
@@ -26,6 +27,16 @@
 	            testing_data.push_back(data_training[c]);
 	        }
 	    }
+
+	    cerr << training_data.size() << endl;
+
+	    proc = vector<PreProcesador> (data_training[0].first.size(), PreProcesador());
+		if(normalizar) {
+	    	for (int i = 0; i < data_training[0].first.size(); ++i) {
+				proc[i] = Normalizador(training_data, i); 
+			}
+		}
+
 			//input
 		for (int i = 0; i < num_att; ++i)
 		{
@@ -94,12 +105,33 @@
 		}
 
 	}
-	void perceptron::multi_test(){
-		multi_test(testing_data);
+	void perceptron::multi_test(Test data_testing){
+		testing_data = data_testing;
+		multi_test();
 	}
 
-	void perceptron::multi_test(Test data_testing){
-            testing_data = data_testing;
+	void perceptron::multi_test(){
+            	for(Test::iterator it = training_data.begin(); it != training_data.end(); ++it) {
+		for(vector<float>::iterator it2 = it->first.begin(); it2 != it->first.end(); ++it2) {
+			cerr << *it2 << " " ;
+		}
+		cerr << " / " ;
+		for(vector<int>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+			cerr << *it2 << " " ;
+		}
+		cerr << endl;
+	}
+
+	for(Test::iterator it = testing_data.begin(); it != testing_data.end(); ++it) {
+		for(vector<float>::iterator it2 = it->first.begin(); it2 != it->first.end(); ++it2) {
+			cerr << *it2 << " " ;
+		}
+		cerr << " / " ;
+		for(vector<int>::iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+			cerr << *it2 << " " ;
+		}
+		cerr << endl;
+	}
             ofstream of("salida_perceptron.txt");
             int ndata = 0;
             int nok = 0;
@@ -122,14 +154,15 @@
 
 				for (std::vector<Neuron>::iterator itr = z.begin(); itr != z.end(); ++itr)
 				{
-					if(itr[0].is_bias == 1)continue;
+					if(itr[0].is_bias == 1) continue;
 					itr[0].in_value = 0;
 				}
 
-                int cin = 0;
+                int cantIn = 0;
                 for(vector<float>::iterator in_n = i->first.begin(); in_n != i->first.end(); ++in_n){
-                    //input[cin].in_value = in_n[0];
-                    input[cin++].out_value = in_n[0];
+                    //input[cantIn].in_value = in_n[0];
+                    input[cantIn].out_value = proc[cantIn].preProcesar(in_n[0]);
+                    cantIn++;
                 }
 
                 //Propagamos a la capa Z
@@ -138,7 +171,7 @@
                 }
 
                 //Calculamos salida de la capa Z
-                for (vector<Neuron>::iterator 	neuronasZ = z.begin(); 	neuronasZ != z.end(); ++neuronasZ)
+                for (vector<Neuron>::iterator neuronasZ = z.begin(); 	neuronasZ != z.end(); ++neuronasZ)
 				{
 					if(neuronasZ[0].is_bias==1) neuronasZ[0].out_value = 1;
 					else neuronasZ[0].evalNeuron(0, &bipolar_sigmoidal);
@@ -222,7 +255,7 @@
 				{
 					//input[i].in_value = att[0];
 
-					input[i].out_value = att[0];
+					input[i].out_value = proc[i].preProcesar(att[0]);
 
 					i++;
 					if(input[i].is_bias==1){
@@ -365,4 +398,30 @@
 		}
 			cout << "\ntotal epocas :" << epoch << "\n";
 			of_stat.close();
+	}
+
+	float perceptron::PreProcesador::preProcesar(float id) {
+		return id;
+	}
+
+	float perceptron::Normalizador::preProcesar(float x) {
+		return (x-promedio)/desvioEstandar;
+	}
+
+	perceptron::Normalizador::Normalizador() {
+		promedio = 0 ; desvioEstandar = 0 ;
+	}
+
+	perceptron::Normalizador::Normalizador(Test & casos, int indice) {
+		promedio = 0;
+		for(Test::iterator it = casos.begin(); 	it != casos.end(); ++it) {
+			promedio += it->first[indice];
+		}
+		promedio /= casos.size();
+		float diffCuadradas = 0;
+		for(Test::iterator it = casos.begin(); 	it != casos.end(); ++it) {
+			diffCuadradas += (it->first[indice]-promedio) * (it->first[indice]-promedio);
+		}
+		diffCuadradas /= casos.size() - 1;
+		desvioEstandar = sqrt(diffCuadradas);
 	}
