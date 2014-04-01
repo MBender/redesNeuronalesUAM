@@ -8,3 +8,10 @@ perceptron:  $(SRC) $(PERCEPTRON)
 
 clean: 
 	rm -f perceptron
+
+help:
+	@echo ""
+	@echo "Como invocar al perceptron:"
+	@echo "./perceptron <neuronas> <constante entrenamiento> <particion entrenamiento> <nombre archivo train> <OPCIONAL:nombre arhcivo test>"
+	@echo "también puedes hacer ./perceptron <fichero>"
+	@echo "dejamos esa forma de debug por comodidad"

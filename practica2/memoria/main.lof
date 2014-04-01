@@ -1,10 +1,2 @@
 \select@language {spanish}
-\contentsline {figure}{\numberline {1}{\ignorespaces Red de McCulloh-Pitch\relax }}{2}{figure.caption.5}
-\contentsline {figure}{\numberline {2}{\ignorespaces Evoluci\IeC {\'o}n del entrenamiento del perceptr\IeC {\'o}n\relax }}{4}{figure.caption.7}
-\contentsline {figure}{\numberline {3}{\ignorespaces Adaline: ECM vs Error\relax }}{5}{figure.caption.8}
-\contentsline {figure}{\numberline {4}{\ignorespaces Constantes de aprendizaje\relax }}{6}{figure.caption.9}
-\contentsline {figure}{\numberline {5}{\ignorespaces NAND\relax }}{7}{figure.caption.11}
-\contentsline {figure}{\numberline {6}{\ignorespaces NOR\relax }}{7}{figure.caption.13}
-\contentsline {figure}{\numberline {7}{\ignorespaces XOR\relax }}{8}{figure.caption.15}
-\contentsline {figure}{\numberline {8}{\ignorespaces Evoluci\IeC {\'o}n del entrenamiento del Perceptr\IeC {\'o}n y Adaline\relax }}{8}{figure.caption.16}
-\contentsline {figure}{\numberline {9}{\ignorespaces Evoluci\IeC {\'o}n del entrenamiento 'completo' del Perceptr\IeC {\'o}n y Adaline\relax }}{9}{figure.caption.17}
+\contentsline {figure}{\numberline {1}{\ignorespaces Gr\'afico comparativo de la disminuci\'on del ECM seg\'un el avance de las \'epocas para distinta cantidad de neuronas en la capa oculta\relax }}{3}{figure.caption.4}

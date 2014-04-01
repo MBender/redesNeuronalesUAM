@@ -28,6 +28,7 @@
 \usepackage{natbib}
 
 \usepackage{color}
+\usepackage{caption}
 \usepackage{subcaption}
 
 
@@ -80,7 +81,7 @@
 
 \title{
 	{\bf Neurocomputación} \\
-	Práctica 1:\\ {\bf Redes de McCulloh-Pitch. Perceptrón y Adaline}.\\
+	Práctica 2:\\ {\bf Perceptrón Multicapa}.\\
 }
 \author{
 	Daniel Gutiérrez Navío \\
@@ -101,7 +102,7 @@
 
 %\renewcommand*\contentsname{Índice}
 \tableofcontents
-\listoffigures
+%\listoffigures
 \newpage
 
 \bibliographystyle{alpha}
@@ -129,280 +130,215 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{Introducción}
 \addcontentsline{toc}{section}{Introducción}
-Esta práctica, la primera de la asignatura de Neurocomputación, se tratará de conseguir una aproximación a redes neuronales, mediante la codificación de tres de las primeras redes neuronales: perceptrón simple, adaline, y red de McCulloh-Pitts, para la resolución de los problemas propuestos.
+En esta práctica realizaremos la implementación de una red neuronal llamada perceptrón multicapa.
+Esta red neuronal, está compuesta además de capa de salida y entrada, por una o más capas intermedias (en nuestro caso, sólo una), y realiza la clasificación en dos fases: una primera fase, de feedforward, en la que la red va pasando, de entrada a salida, los valores que le entran; y una segunda fase llamada backpropagation, en que la red responde al error cometido, y realiza una actualización de pesos para reducir el ECM, una regla delta, propagando el error de salida a entrada (back-propagation).
 
-\subsection*{Diseño}
-Para la resolución de esta práctica, y de las venideras, hemos decidido realizar el desarrollo de una interfaz para redes neuronales en C++, para simplificar futuros trabajos. 
-La interfaz principal, está compuesta de estructuras de neuronas y links. Una neurona es una simple unidad, con entrada y salida de datos, y un proceso adaptable para la transformación de una en otra.
-
-El link, es un enlace pesado entre dos neuronas, que lleva la salida, multiplicada por su peso, a la entrada del objetivo, donde suma a lo que ya haya.
-
-Mediante estos dos elementos, podemos construir cualquier red neuronal.
-Además, se ha diseñado una clase, perceptrón, con una estructura genérica adaptable, que puede usarse para la construcción de otras redes.
+Tras la implementación de la red, se realizarán una serie de experimentos propuestos en la práctica, y analizaremos unas cuántas cualidades adicionales de este tipo de redes.
 
 \newpage
-% 1 McCulloh-Pitch
+% 1 Implementación
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Transformada rápida de Fourier con recursión}
-%Descripción del algoritmo FFT con recursión. 
-En este apartado de la práctica, se deberá realizar una red de McCulloh-Pitts para la resolución del problema propuesto.
-Se utilizará la siguiente arquitectura de McCulloh-Pitts para realizar la red:
+\section{Implementación}
 
-\begin{figure}[h!]
-    \label{fig:fig1}
-  \centering
-       \includegraphics[width=0.7\textwidth]{recursos/fig1}
-    \caption{Red de McCulloh-Pitch}
-\end{figure} 
+En esta sección analizaremos la implementación del algoritmo de clasificación del Perceptrón Multicapa.
 
-Usando como umbral en todas las neuronas 2, y sin usar ninguna sinapsis inhibitoria.
+Usaremos el mismo framework de neuronas y links que usamos en la anterior práctica: la unidad básica de información de la red es la neurona, que, para la realización de esta práctica, se ha modificado añadiendole una variable, además de valor de salida y entrada, llamada valor delta.
 
-La implementación de esta red, como puede verse, se ha hecho de manera totalmente lineal, creando una estructura en capas, en las que no existe ningún tipo de retroalimentación, sino que una capa inferior proporciona salidas conectadas a las capas superiores (no a la inmediatamente superior necesariamente).
+Para enviar información entre neuronas, se usan los links, los cuales tienen un peso, y contienen la referencia a sus neuronas de origen y de destino. Para ésta práctica, se ha añadido un nuevo método, para propagar por detrás el valor delta (el error), de la neurona destino hacia la origen.
 
-En nuestro caso, usamos 4 capas: una capa de entrada, una capa de salida, y 2 niveles de capas ocultas, provocando así un retraso de 3 épocas entre una entrada, y su correspondiente salida.
+El algoritmo, no es más que una implementación usando ésto de el algoritmo de back propagation. Primero, se realiza una fase de feedforward, en que simplemente los links propagan valores de entrada, y las neuronas calculan su salida. Finalmente, tras calcular la salida de la red, se realiza la backpropagation, en la que las neuronas de salida calculan su error, propagan el error hacia atrás por los links, y por último, se cambian los pesos. El algoritmo utilizado es el que viene en las transparencias del tema 3.
 
-En caso de no haber entrada dado que no se ha cargado aún, el sistema devolverá 0 0 0, la salida neutra, que no proporciona ningún tipo de información.
 
-Se han diseñado distintos ejemplos, y sus salidas, que pueden verse en el makefile escribiendo \texttt{makefile help-mcculloh}.
+%Agregado sobre lo de normalizar
+Para realizar la normalización se incorporó una funcionalidad en el perceptron, la cual calcula la media y el desvio estandar al recibir los datos de training. De esta manera, en caso de querer normalizarlos, solo se debe hacer una cuenta aritmética simple, garantizando que el tiempo de computo no se vea afectado.
 
 \newpage
 
-% 2 Perceptrón y Adaline
+% 2 Probando con las entradas viejas
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Perceptrón y Adaline}
-\subsection*{Introducción}
-En esta parte, se deberá realizar la implementación de dos algoritmos nuevos: un Perceptrón de capa simple, y un Adaline. Ambos redes neuronales simples para problemas lineales.
+\section{Probando con las propuestas de la pr\'actica anterior}
 
-En ambos casos, son algoritmos de aprendizaje supervisado, que requieren de un tiempo de preparación, llamado entrenamiento, para su correcto funcionamiento.
+En esta sección trataremos los problemas trabajados en la práctica anterior. Para ello probaremos las puertas lógicas que nos propusieron (NAND y NOR, linealmente separables, y XOR, que no lo es), y los ejemplos de problemas reales (1 y 2).
 
-\subsection{Perceptrón}
+Primeramente deberemos tratar los datos de NAND, NOR y XOR, dado que éstos tienen una entrada en formato binario, y nosotros necesitamos entrada bipolar (o bien cambiar el algoritmo, pero al habernos propuesto éste formato, ésta idea queda descartada). Simplemente, cambiamos los 0 por -1 en el fichero.
 
-\subsubsection{Introducción y diseño}
+Ahora realizaremos la prueba de cada una de los ficheros. Sin embargo, antes vamos a realizar una predicción previa de los resultados, basándonos en el funcionamiento teórico de ésta red neuronal.
 
-El objetivo de este ejercicio consiste en construir un perceptrón simple, o monocapa, con una sola neurona de salida, para reconocer patrones. Usaremos la estructura de red neuronal que hemos descrito al principio de este documento, pero adaptandola al sistema de entrenamiento y clasificación de un perceptrón.
+Los ficheros NAND y NOR, debería resolverlos sin problemas, dado que son linealmente dependientes. 
 
-Este sistema consiste en aplicar una variación de la regla de hebb, es decir, en caso de error en clasificar un elemento de entrenamiento, aplicaremos una actualización de pesos. La actualización de pesos que aplicaremos será la siguiente:
-$w_{t+1}=w_{t}+ \alpha*t*x$
+En el problema real 1, dará un resultado algo superior al Perceptrón Simple, dado que podrá, al tener una frontera de decisión más lineal, no debería dar problemas, y solo mejorar el rendimiento.
 
-Donde w, es el peso de la sinapsis en un momento concreto, $\alpha$ es la constante de entrenamiento $(0 < \alpha \ge 1)$, y t es un valor de verdad, que corresponde a la clase que es de verdad (1 si es clase 1, -1 si es clase 2, al ser bipolar).
-
-Decidimos usar de condición de parada, un 100\% de acierto, es decir, una etapa completa sin un solo error. Pero como muy a menudo, al poder clasificar solo problemas lineares, esto no es posible, hemos decidido una cantidad de épocas de entrenamiento. Usaremos una cantidad de épocas elevada, 100, aunque luego comentaremos esta cantidad y miraremos los problemas acotados en caso de que se detenga el proceso de aprendizaje.
-
-\subsubsection{Descripción de los resultados}
-Tras preparar el perceptrón de la manera que se ha explicado, ejecutamos el programa para obtener datos estadísticos de el proceso de aprendizaje.
-
-El resultado, es de un 93\% de acierto en entrenamiento, que cambia a 95\% de acierto en el testing.
-
-El resultado, como podemos comprobar, es realmente muy eficaz, dado que podemos ver que se adapta de una manera muy buena a el problema propuesto.
-
-En la siguiente gráfica, podemos apreciar la evolución durante el entrenamiento (acotado).
+Vemos ahora el resultado, comparando primero el ECM con 5, 10 y 20 neuronas ocultas, y luego el error durante el entrenamiento (durante el test siempre es de un 1 a un 2\% superior al del entrenamiento):
 
 \begin{figure}[h!]
-    \label{fig:fig2}
+    \label{fig:ecm_pr1}
   \centering
-       \includegraphics[width=0.7\textwidth]{recursos/fig2}
-    \caption{Evolución del entrenamiento del perceptrón}
+       \includegraphics[width=0.7\textwidth]{recursos/ecm_pr1}
 \end{figure} 
 
-Podemos comprobar, que se mantiene constante gran parte del tiempo el error, por lo que podemos determinar que, usando un perceptrón, no podemos superar cierta cota en este problema de error, suponiendolo a ruido o casos no lineales.
+Al ser linealmente dependiente el problema, vemos que con 5, 10 y 20 neuronas, tiene resultados mas o menos igual de lisos, dado que con ese número de neuronas basta para calcular una solución, es decir, dibujar una frontera de decisión que vaya reduciendo paulatinamente el error cuadrático medio, siendo cuanto mayor el número de neuronas, mayor la eficacia de ésta frontera.
 
-
-\subsection{Adaline}
-
-\subsubsection{Introducción y diseño}
-
-En este ejercicio, se nos pide modificar la red creada en el anterior, el perceptrón, para crear un Adaline. El adaline es una red neuronal, basada también en aprendizaje de Hebb, pero con graves modificaciones, para orientarse a la reducción del error cuadrático medio.
-El error cuadrático medio (ecm), es una medida usada para el error promedio en estimación. Para calcularlo, se tiene que encontrar el valor esperado del cuadrado de la diferencia entre <X> (el estimador), y X, aplicando la fórmula:
-
-$ecm = \frac{sqrt(sum(xi-<X>)^{2})}{n}$
-
-siendo <X>, $(\frac{sum(x_{i})}{n})$, podemos sustituir, dándonos la fórmula
-
-$ecm = \frac{sqrt(sum(xi-(\frac{sum(x_{i})}{n}))^{2}}{n}$
-
-La regla que reduce este error, se obtiene mediante su gradiente, dándo a usar la conocida como llamada regla delta para la actualización de pesos:
-
-$w_{i+1} = w_{i} + \alpha*(t-y)*x$
-
-Esta regla, a diferencia del perceptrón, que solo actualiza en caso de error, se aplica siempre.
-
-\subsubsection{Descripción de los resultados}
-
-Para exponer los resultados, usaremos la misma estructura que empleamos en el caso del perceptrón, solo que además añadiremos una gráfica exponiendo la variación del error cuadrático medio, para observar la eficacia de este algoritmo (cosa que no se hizo en el perceptrón, al no ser considerado relevante para el problema, ya que el perceptrón ignora (aunque afecta indirectamente) el error cuadrático medio, y no es motivo de comparación).
-
-El resultado del entrenamiento, con un máximo de épocas acotado, es el siguiente, viéndolo comparativamente el ECM con el error:
+Ahora veremos el error de éste resultado:
 
 \begin{figure}[h!]
-    \label{fig:fig1}
+    \label{fig:error_pr1}
   \centering
-       \includegraphics[width=0.7\textwidth]{recursos/fig8}
-    \caption{Adaline: ECM vs Error}
+       \includegraphics[width=0.7\textwidth]{recursos/error_pr1}
 \end{figure} 
 
-El error al final del entrenamiento, como ha podido apreciarse, es de XXX\%, mientras que en el test, es de XXX\%. Esto, como se mencionó, varía con cada ejecución al hacerse una distribución aelatoria de los datos.
+Podemos observar errores muy bajos, cercanos al 4\% en caso de 5 y 10 neuronas, y al 2\% en caso de 20 neuronas, suponiendo ésto una mejora de cerca del 5\% respecto al Perceptrón Simple.
 
-\subsection{Parámetros de aprendizaje}
+En cuanto al problema real 2, dará un resultado aproximadamente (o ojo) un 10-15\% mayor, debido a que el problema de ese fichero es el ruido que tiene, y el Perceptrón permite una frontera de decisión más flexible.
 
-Para realizar este ejercicio, mostraremos una tabla con los resultados de variar, con un máximo de 100 épocas, la constante de aprendizaje entre 0,1 y 1, tanto en adaline como en pereceptrón.
+Observemos ahora los resultados. Realizaremos el mismo estudio que en el problema real 1, con el mismo número de neuronas y con las mismas variables (ECM y error de training). Empezamos analizando el ECM:
 
 \begin{figure}[h!]
-    \label{fig:fig1}
+    \label{fig:ecm_pr2}
   \centering
-       \includegraphics[width=0.7\textwidth]{recursos/fig9}
-    \caption{Constantes de aprendizaje}
+       \includegraphics[width=0.7\textwidth]{recursos/ecm_pr2}
 \end{figure} 
 
-Como se puede ver, al no llegar a converger nunca, no se ha podido comprobar exactamente el efecto. Sin embargo, se ha podido apreciar que tarda más en estabilizarse cuanto menor es la constante de aprendizaje (la diferencia sin embargo, no es demasiado considerable en este intervalo).
+Aquí podemos ver que en caso de 5 neuronas, su comportamiento es muy inferior (mayor ECM siempre) que con 10 y 20 neuronas, siendo estos dos muy cercanos. Sin embargo, es ligeramente superior el comportamiento de la red con 10 neuronas, al de 20. Ésto es debido, a la gran cantidad de ruido (dado el gran número de patrones de entrenamiento), en el conjunto de entrenamiento, que provoca un sobreaprendizaje negativo en caso de las 20 neuronas.
 
-\subsection{Entrenamiento-test completo}
-La variación se ha realizado, haciendo que pueda recibir el main 2 argumentos, un primer argumento que sea el conjunto de entrenamiento, y otro segundo argumento, el de test. En caso de ser de conjuntos distintos, el programa no se hace responsable y DARÁ MUY PROBABLEMENTE UN ERROR.
+Ahora observemos el error en este caso:
 
-A continuación se muestra el resultado de analizar los archivos propuestos, con número de épocas hasta la convergencia, en caso de existir (límite: 100 epocas).
+\begin{figure}[h!]
+    \label{fig:error_pr2}
+  \centering
+       \includegraphics[width=0.7\textwidth]{recursos/error_pr2}
+\end{figure} 
+
 
 \newpage
-\subsubsection*{NAND}
+% 3 Caso real
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Predicci\'on con ejemplos de m\'as clases}
+En este ejercicio miraremos el rendimiento del Perceptrón Multicapa en un problema con más de 2 clases, en concreto, 3 (problema real 3).
+
+En un análisis preliminar, sin ver los atributos, podemos decir que será eficaz en el caso de que tenga fronteras de decisión definidas y sin mucho ruido.
+
+Una vez hecha la ejecución, vamos a comparar el rendimiento en aprendizaje y test, midiendo el ECM y el porcentaje de error, con 5, 10 y 20 neuronas ocultas.
+
+La ejecución llega a convergencia en training con las 10 y 20 neuronas, siendo antes la convergencia en el caso de 10 neuronas que en el de 20.
+
+Observemos el gráfico del ECM:
+
 \begin{figure}[h!]
-    \label{fig:fig3}
+    \label{fig:ecm_pr3}
   \centering
-       \includegraphics[width=0.7\textwidth]{recursos/fig3}
-    \caption{NAND}
+       \includegraphics[width=0.7\textwidth]{recursos/ecm_pr3}
+\end{figure}
+
+Aquí podemos ver  que el ECM en caso de 5 neuronas se mantiene en reducción continua, mientras que con 10 y 20, converge. Eso puede ser debido a cierta frontera de decisión definida que son capaces de encontrar con 10 y 20 neuronas. Comentaremos sobre error de test, al comentar los errores.
+
+Se ve que tiene una tasa irregular de reducción del ECM en el caso de 20 neuronas, al subir el número de neuronas, sube el ECM en ocasiones, debido probablemente en problemas de fronteras de decisión demasiado complejas.
+
+Ahora observemos el error de entrenamiento:
+
+\begin{figure}[h!]
+    \label{fig:error_pr3}
+  \centering
+       \includegraphics[width=0.7\textwidth]{recursos/error_pr3}
 \end{figure} 
 
+Aquí podemos observar que, efectivamente, llega a 0 de error en el caso de 10 y 20 neuronas, una por la época 130, y otro por la época 900, respectivamente.
 
-
-\subsubsection*{NOR}
-\begin{figure}[h!]
-    \label{fig:fig4}
-  \centering
-       \includegraphics[width=0.7\textwidth]{recursos/fig4}
-    \caption{NOR}
-\end{figure} 
-
-Nótese que aquí ambas coinciden
-\subsubsection*{XOR}
-\begin{figure}[h!]
-    \label{fig:fig5}
-  \centering
-       \includegraphics[width=0.7\textwidth]{recursos/fig5}
-    \caption{XOR}
-\end{figure} 
-
-Podemos observar que aquí siempre da error. Podría dar al principio algún caso de éxito, dependiendo de los valores iniciales.
-
-Como podemos comprobar, xor no llega a ninguna convergencia. Esto es debido a que xor no es linealmente separable, mientras que los demás al ser linealmente separables, si que pueden ser resueltos completamente.
-
-\subsection{Clasificación de datos desconocidos}
-Se ha aplicado el problema propuesto tanto al perceptrón como al adaline. Se muestran a continuación las gráficas de entrenamiento (acotadas a 100 epocas), de ambos, en el caso de usar con una división 2/3 training, 1/3 test, en el archivo problema\_real2.txt.
-
-La gráfica de la evolución de el entrenamiento en perceptrón y adaline es la siguiente:
-\begin{figure}[h!]
-    \label{fig:fig6}
-  \centering
-       \includegraphics[width=0.7\textwidth]{recursos/fig6}
-    \caption{Evolución del entrenamiento del Perceptrón y Adaline}
-\end{figure} 
-
-En ella podemos ver que el perceptrón tiene un índice de error menor que el adaline. Eso es debido a que el perceptrón funciona pensando en el error final, mientras que el adaline en el error cuadrático medio, siéndo este visiblemente más suave.
-
-Por último, se muestra a continuación las gráficas de entrenamiento de usar el fichero entero como entrenamiento. Los resultados de el problema, irán en un archivo adjunto a esta memoria.
-\begin{figure}[h!]
-    \label{fig:fig7}
-  \centering
-       \includegraphics[width=0.7\textwidth]{recursos/fig7}
-    \caption{Evolución del entrenamiento 'completo' del Perceptrón y Adaline}
-\end{figure} 
-
-En ella se puede ver un desarrollo similar a la anterior, en la que el perceptrón muestra, durante el entrenamiento, un mejor comportamiento que el adaline, al tener casi un 10\% de acierto más que el adaline.
-
-
-\subsection{Añadir parámetros no lineales}
-Este ejercicio no es propiamente un ejercicio, ya que basta con añadir unos cuantos datos aleatorios, que sean no lineales (ruido). Para ello, hemos introducido en los datos ciertos datos que nos hemos inventado, y hemos observado que la precision empeora, pero al no converger ya de por sí, el impacto es menor del que esperamos.
+Si comparamos la gráfica de error medio de 20 y y de ECM, podemos ver una coincidencia a la subida del ECM con la subida del error, debido a, como se comentó con anterioridad, la frontera de decisión transitoria peor, que luego se corrige sola.
 
 \newpage
+% 4 - Datos grandes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Predicción sobre problemas complejos}
+
+Ahora tendremos que intentar clasificar con el Perceptrón Multicapa un archivo con diferencia muy grande en sus atributos de entrada. Evaluaremos así la eficacia de este tipo de redes ante entradas con diferencias notables de peso.
+
+En teoría, el Perceptrón Multicapa es muy sensible ante estas cosas, dado que el valor que llegue condiciona mucho la funcion lambda que realizará, provocando cierta dominancia.
+
+Las estadísticas que realizamos sobre los datos son los siguientes:
+\begin{figure}[!ht]
+\centering
+   \includegraphics[width=\textwidth]{recursos/tabla}
+            \caption{Tabla estadística de datos}
+            \label{fig:stat_pr4}
+\end{figure}
+\newpage
+% 5 - Normalización
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Optimizando el algoritmo para problemas complejos - Normalizaci\'on}
+
+Como pudo apreciarse en la sección anterior, el aprendizaje no alcanzó un nivel tan bueno como el esperado, además de oscilar de manera increible época a época. La explicación más precisa de esto se debe a la varianza y la disperción de los datos, lo que ocasiona que se trabajen con valores, en módulo, muy grandes y chicos a la vez. Dada la estructura del algoritmo de Backpropagation (descenso por el gradiente), los patrones de entrenamiento los cuales tengan valores más grandes lograran imponerse sobre los más chicos, teniendo un efecto mucho más importante, lo cual debería ser irrelevante a la hora de clasificar estos patrones. Por otra parte, si bien no ocurre aquí, al trabajar con valores tan grandes y tan chicos a la vez, los algoritmos son menos robutos, numéricamente, y causan una convergencia más lenta. Una explicación detallada del asunto puede encontrarse en [Y. LeCunn, L.Bottou, G.B.Orr, K.R.Muller, “Eficient BackProp” Lecture Notes In Computer Science, vol. 1524, Springer-Verlag, London, pp. 8-10, 1998.]
+
+
+\begin{figure}[!ht]
+\centering
+    \begin{subfigure}[b]{0.5\textwidth}            
+            \centering
+            \includegraphics[width=\textwidth]{recursos/ecm_pr4}
+            \caption{Datos no normalizados}
+            \label{fig:ecm_pr4}
+    \end{subfigure}%
+     %add desired spacing between images, e. g. ~, \quad, \qquad etc.
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.5\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{recursos/ecm_pr4_norm}
+            \caption{Datos normalizados}
+            \label{fig:ecm_pr4_norm}
+    \end{subfigure}
+    \caption{Evoluci\'on del ECM en las distintas \'epocas}
+  \label{fig:ecm_vsnorm}
+\end{figure}
+
+%Grafico de ECM
+
+Particularmente, en los gráficos podemos apreciar que mientras el algoritmo sin normalizar no converge para algunos casos (por ejemplo, con 20 neuronas en la capa oculta queda oscilando entre un ECM de 1,3 y 1,7), en el caso normalizado el algoritmo converge a valores mucho menores (del orden de las 20 veces menor) en una cantidad de iteraciones entre las 50 y las 100 según el caso.
+
+
+\begin{figure}[!ht]
+\centering
+    \begin{subfigure}[b]{0.5\textwidth}            
+            \centering
+            \includegraphics[width=\textwidth]{recursos/error_pr4}
+            \caption{Datos no normalizados}
+            \label{fig:error_pr4}
+    \end{subfigure}%
+     %add desired spacing between images, e. g. ~, \quad, \qquad etc.
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.5\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{recursos/error_pr4_norm}
+            \caption{Datos normalizados}
+            \label{fig:error_pr4_norm}
+    \end{subfigure}
+    \caption{Evoluci\'on del porcentaje de error en training}
+  \label{fig:error_vsnorm}
+\end{figure}
+
+%Grafico de Error
+
+Por otra parte, podemos notar como el porcentaje de error en training se estabiliza, alcanzando valores cercanos al 5\%, mientras en los otros casos conseguiamos oscilaciones entre los 50\% y los 30\%. La conclusión de este procedimiento es obvia, normalizar los valores pueden transformar una red inservible (dado que predice con precisión de 40\% aproximadamente) a una red precisa, con un margen de 5\% de error.
+
+\newpage
+
+
+% 6 - Prediccion
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Predicciones sobre datos no etiquetados}
+Aquí vamos a realizar la clasificación de un fichero de datos desconocido. Para ello, realizaremos un entrenamiento con el 100\% de los elementos del problema real 2, y luego ejecutaremos el algoritmo de clasificación sobre el fichero de clases desconocidas, obteniendo el fichero de salida que nos piden.
+
+\newpage
+
 % Conclusiones
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{Conclusiones}
 \addcontentsline{toc}{section}{Conclusiones}
+A lo largo de este trabajo topamos con las distintas virtudes de esta técnica de aprendizaje. Por un lado, en la primera parte, pudimos apreciar como un Perceptrón Multicapa puede resolver problemas que las demás técnicas de aprendizaje que aprendimos podían (NAND, NOR) y algunos que estas no (XOR). Esto nos permitió concluir que el poder de este autómata para predecir\/aprender es mayor a los aprendidos antes, algo que vimos de manera teórica en clase, pero pudimos comprobar empíricamente.
 
-En esta práctica hemos aprendido a implementar redes neuronales para la resolución de sistemas lineales ( o problemas lineales ). Pese a la utilidad de ésto, teóricamente, en la realidad, como se ha podido comprobar durante la práctica, los problemas lineales no son demasiado comunes, por lo que un sistema imperfecto como éste no tiene demasiada utilidad en un caso real (ruido, así como complejidad de los problemas). Sin embargo, estos algoritmos luego servirán de base para otros más potentes con capacidad de división no lineal.
+Por otra parte, pudimos apreciar el poder de esta técnica para enfrentarse a problemas de otra magnitud, donde la clasificación se hace con más datos y se tiene una cantidad mayor de categorías que dos (a lo que estabamos acostumbrados). Si bien, al contrario de lo que esperabamos, el Perceptrón encontró algunos problemas para afrontar tipos de datos con varianzas altas, al aplicar la normalización estos problemas desaparecieron. Esto nos permite concluir algo fundamental, el Perceptrón tiene un poder para aprender inmenso. Los distintos problemas que pueda enfrentar no son esenciales de la técnica, sino que pueden ser corregidos con cambios pequeños, como en este caso la Normalización.
 
-Además, en esta práctica hemos creado, en el lenguaje de programación \verb!C++!, un "framework" de redes neuronales, para realizar una arquitectura de redes neuronales genéricas, que nos servirá en las siguientes prácticas.
-
-
-% (OPTATIVO) 4 Aplicación de la transformada discreta de Fourier sobre una señal.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\section{Ejercicio 4: Aplicación de la transformada discreta de Fourier sobre una señal.}
-%Breve descripción de la TDF indicando tres aplicaciones prácticas. Asimismo, se deberá explicar el significado de la serie transformada respondiendo a las siguientes preguntas:
-%-	¿En qué puntos de la serie transformada aparecen impulsos y qué módulo tienen? ¿Cómo se relacionan con la señal original?
-%-	¿Qué se consigue utilizando filtros de baso bajo y de paso de banda? ¿Qué sucede a la señal original cuando aplicamos filtros de baso bajo y de paso de banda? ¿y cuando eliminamos la componente cero de la serie transformada?
-%-	Gráficas de la señal original y de las señales obtenidas tras aplicar los filtros.
-
-%\newpage
-
-% Conclusiones
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\section*{Conclusiones}
+Este trabajo nos enseñó que tenemos que debemos considerar a los Perceptrones Multicapa cada vez que queramos hacer una clasificación. Si bien pude parecer que no funciona, un análisis más preciso puede corregir fácilmente esas dificultades. En pocas palabras: ``Que vivan los Perceptrones''.
 
 
-
-
-
-%\addcontentsline{toc}{section}{Conclusiones}
-
-
-%\newpage
-
-
-
-% Para cada prueba se pide una descripción de la misma que incluya: 
-	% - nombre de la función a probar
-	% - objetivo de la prueba
-	% - desarrollo 
-	% - resultado esperado
-
-
-% Detallar los resultados obtenidos tras el paso de las pruebas a la práctica y las conclusiones extraídas de dichos resultados
-
-% 8 Conclusiones
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%% Consideraciones finales y anexos %%%%%%
-%\phantomsection
-%\addcontentsline{toc}{section}{Anexo A. Pseudocódigo de Dijkstra}
-%\section*{Anexo A. Pseudocódigo de Dijkstra}
-
-% Referencias
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\bibliographystyle{plain}
-%\renewcommand*\refname{Referencias}		% Titulo en español
-%\bibliography{recursos/bibliografia}
-
-%TODO: RFC DE IRC (Descomentar)
-%\begin{thebibliography}{2}
-%\bibitem{1}
-%	Network Working Group,
-%	\emph{RFC 1459: Internet Relay Chat, IRC}.
-%\bibitem{2}
-%	Network Working Group,
-%	\emph{RFC 2326: RTSP: Real Time Streaming Protocol Overview}.
-%\bibitem{3}
-%	Network Working Group,
-%	\emph{RFC 3550: RTP: A Transport Protocol for Real-Time Applications}.
-%\bibitem{4}
-%	Network Working Group,
-%	\emph{RFC 1889: RTP: A Transport Protocol for Real-Time Applications}.
-%\end{thebibliography}
-
-
-% Figuras
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{figure}[h!]
-%	\centering
-%   		 \includegraphics[width=0.7\textwidth]{recursos/Hilos}
-%  	\caption{Hilos de la aplicación}
-%  	\label{hilos}
-%\end{figure} 
 
 
 \end{document}

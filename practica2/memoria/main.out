@@ -1,14 +1,8 @@
-\BOOKMARK [1][-]{section*.3}{Introducci\363n}{}% 1
-\BOOKMARK [1][-]{section.1}{Transformada r\341pida de Fourier con recursi\363n}{}% 2
-\BOOKMARK [1][-]{section.2}{Perceptr\363n y Adaline}{}% 3
-\BOOKMARK [2][-]{subsection.2.1}{Perceptr\363n}{section.2}% 4
-\BOOKMARK [3][-]{subsubsection.2.1.1}{Introducci\363n y dise\361o}{subsection.2.1}% 5
-\BOOKMARK [3][-]{subsubsection.2.1.2}{Descripci\363n de los resultados}{subsection.2.1}% 6
-\BOOKMARK [2][-]{subsection.2.2}{Adaline}{section.2}% 7
-\BOOKMARK [3][-]{subsubsection.2.2.1}{Introducci\363n y dise\361o}{subsection.2.2}% 8
-\BOOKMARK [3][-]{subsubsection.2.2.2}{Descripci\363n de los resultados}{subsection.2.2}% 9
-\BOOKMARK [2][-]{subsection.2.3}{Par\341metros de aprendizaje}{section.2}% 10
-\BOOKMARK [2][-]{subsection.2.4}{Entrenamiento-test completo}{section.2}% 11
-\BOOKMARK [2][-]{subsection.2.5}{Clasificaci\363n de datos desconocidos}{section.2}% 12
-\BOOKMARK [2][-]{subsection.2.6}{A\361adir par\341metros no lineales}{section.2}% 13
-\BOOKMARK [1][-]{section*.18}{Conclusiones}{}% 14
+\BOOKMARK [1][-]{section*.2}{Introducci\363n}{}% 1
+\BOOKMARK [1][-]{section.1}{Implementaci\363n}{}% 2
+\BOOKMARK [1][-]{section.2}{Probando con las propuestas de la pr\341ctica anterior}{}% 3
+\BOOKMARK [1][-]{section.3}{Predicci\363n con ejemplos de m\341s clases}{}% 4
+\BOOKMARK [1][-]{section.4}{Predicci\363n sobre problemas complejos}{}% 5
+\BOOKMARK [1][-]{section.5}{Optimizando el algoritmo para problemas complejos - Normalizaci\363n}{}% 6
+\BOOKMARK [1][-]{section.6}{Predicciones sobre datos no etiquetados}{}% 7
+\BOOKMARK [1][-]{section*.12}{Conclusiones}{}% 8

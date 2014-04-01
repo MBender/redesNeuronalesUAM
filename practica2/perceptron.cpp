@@ -195,7 +195,14 @@
 
 				}
 				if(clase == pred_class) nok++;
-                of << pred_class << endl;
+                
+				string out_string = "";
+				for(int c = 1; c <= instance.second.size(); c++){
+					if(c == pred_class) out_string = out_string + "1 ";
+					else out_string = out_string + "0 ";
+				}
+				of << out_string << endl;
+                //of << pred_class << endl;
                 //escribe la clase predicha en un fichero.
                 ndata++;
             }
