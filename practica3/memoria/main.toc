@@ -1,0 +1,9 @@
+\select@language {spanish}
+\contentsline {section}{Introducci\IeC {\'o}n}{1}{section*.2}
+\contentsline {section}{\numberline {1}Implementaci\IeC {\'o}n}{2}{section.1}
+\contentsline {section}{\numberline {2}Probando con las propuestas de la pr\'actica anterior}{3}{section.2}
+\contentsline {section}{\numberline {3}Predicci\'on con ejemplos de m\'as clases}{5}{section.3}
+\contentsline {section}{\numberline {4}Predicci\IeC {\'o}n sobre problemas complejos}{7}{section.4}
+\contentsline {section}{\numberline {5}Optimizando el algoritmo para problemas complejos - Normalizaci\'on}{8}{section.5}
+\contentsline {section}{\numberline {6}Predicciones sobre datos no etiquetados}{9}{section.6}
+\contentsline {section}{Conclusiones}{10}{section*.12}
