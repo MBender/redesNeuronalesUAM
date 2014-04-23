@@ -1,7 +1,7 @@
 CC=g++
-CFLAGS=-g -Wall
-SRC=neuron.cpp neuron.h cargar.cpp cargar.h
-PERCEPTRON=perceptron.cpp perceptron.h main_perceptron.cpp
+CFLAGS=-g -std=c++0x -Wall
+SRC=neuron.cpp neuron.h series.cpp series.h
+PERCEPTRON=perceptron.cpp perceptron.h main_series.cpp
 
 perceptron:  $(SRC) $(PERCEPTRON)
 	$(CC) $(CFLAGS) $(SRC) $(PERCEPTRON)  -o perceptron

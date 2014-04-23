@@ -2,11 +2,14 @@
 #define __PERCEPTRON_H__
 
 #include "neuron.h"
-#include "cargar.h"
+#include "series.h"
 #include <vector>
-#include <math.h> 
+#include <cmath> 
 
 using namespace std;
+
+typedef pair<vector<float>, float> Par;;
+
 
 float binary_sigmoidal(void* context, float in_value);
 float bipolar_sigmoidal(void* context, float in_value);
@@ -14,9 +17,9 @@ float bipolar_sigmoidal(void* context, float in_value);
 class perceptron{
 
 public:
+	perceptron();
 
-
-	perceptron(int num_hidden, float part,Test data_training, float rate, bool shift, bool norm);
+	perceptron(int num_hidden, float part, vector<Par> data_training, float rate, bool shift, bool norm);
 
 	void multi_train();
 
@@ -28,12 +31,13 @@ public:
 
     void multi_test();
 
-    void multi_test(Test);
-        
-    void train();
+    void multi_test(vector<Par> data_testing);
+      
+    void procesar_recursiva(vector<float> raw_data);
 
-    void train(Test data_training);
+    double exploit_epoch(vector<float> in_data);
 
+    void procesar_recursiva(vector<float> raw_data, int num_pred);
 private:
 
 	/*The elements of the perceptron*/
@@ -46,9 +50,9 @@ private:
 	std::vector<Link> l_z;
 	std::vector<Link> l_y;
 	//data for training
-	std::vector<pair> v; training_data;
+	std::vector<Par>  training_data;
     //data for test
-    std::vector<pair> v; testing_data;
+    std::vector<Par>  testing_data;
 	//number of atts and classes
 	int num_att;
 	int num_class;
@@ -63,5 +67,7 @@ private:
 	vector<float> desvioEstandar;
 
 	float preProcesar(float, int);
+
+
 };
 #endif

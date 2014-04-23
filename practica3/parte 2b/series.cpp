@@ -6,13 +6,16 @@
 #include <ctime>
 #include <algorithm>
 #include <cstdlib>
+#include "series.h"
 
-vector<double> read_serie(string archivo){
+using namespace std;
+
+vector<float> read_serie(string archivo){
 	ifstream leer;
 	leer.open(archivo.c_str());
-	std::vector<double> in_raw; 
+	std::vector<float> in_raw; 
 	while(!leer.eof()) {
-		double number;
+		float number;
 		leer >> number;
 		in_raw.push_back(number);
 	}
@@ -20,9 +23,10 @@ vector<double> read_serie(string archivo){
 	return in_raw;
 }
 
-static void adapta_fichero_serie(string nombre_entrada, string nombre_salida, int np){
+void adapta_fichero_serie(string nombre_entrada, string nombre_salida, int np, 
+	int nneurons){
 
-	std::vector<double> serie_raw = read_serie(nombre_entrada);
+	std::vector<float> serie_raw = read_serie(nombre_entrada);
 
 	//ahora creamos la serie
 	//miramos cantidad para particion
@@ -32,14 +36,14 @@ static void adapta_fichero_serie(string nombre_entrada, string nombre_salida, in
 	int size_train = size*0.25;
 
 	//creamos vector de entrenamiento
-	std::vector<pair> training;
+	std::vector<Par> training;
 	for (int i = 0; i < size_train; ++i)
 	{
-		std::pair<vector, double> training_pair;
-		std::vector<double> v;
-		double clase;
+		Par training_pair;
+		std::vector<float> v;
+		float clase;
 		for(int j = 0; j <= np; j++){
-			if(j = np){
+			if(j == np){
 				clase = serie_raw[i+j];
 			}else{
 				v.push_back(serie_raw[i+j]);
@@ -51,8 +55,35 @@ static void adapta_fichero_serie(string nombre_entrada, string nombre_salida, in
 	}
 
 	//creamos la red neuronal
+	perceptron p(nneurons
+		,0,training, 0.5, true, true);
 
+	//y entrenamos
+	p.multi_train();
 
+	//ahora hacemos partición de test
+	std::vector<Par> testing;
+	for (int i = size_train; i < size-np; ++i)
+	{
+		Par testing_pair;
+		std::vector<float> v;
+		float clase;
+		for(int j = 0; j <= np; j++){
+			if(j == np){
+				clase = serie_raw[i+j];
+			}else{
+				v.push_back(serie_raw[i+j]);
+			}
+		}
+		testing_pair.first = v;
+		testing_pair.second = clase;
+		testing.push_back(testing_pair);
+	}
+
+	//y metemos en test
+	p.multi_test(testing);
+
+	return;
 	//primero creamos un perceptron, con una salida, y un numero de entradas igual a np.
 	//Tras eso, habrá que crear la serie de predicción.
 	//usaremos el fichero, leyendolo y cogiendo las N primeras lineas para predecir la enesima.

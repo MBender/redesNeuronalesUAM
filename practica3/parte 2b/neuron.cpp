@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "neuron.h"
-#include "cargar.h"
+#include "series.h"
 using namespace std;
 
 Neuron::Neuron(){
