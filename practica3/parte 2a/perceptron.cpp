@@ -16,7 +16,7 @@
 		learn_rate = 0.5;
 
 		num_att = data_training[0].first.size();
-		num_class = 1;
+		num_class = data_training[0].second.size();
 
         int c = 0;
         float top = data_training.size()*part;
@@ -51,7 +51,7 @@
 		
 
 		threshold = 2;
-        for(int i = 0; i < 1;i++){
+        for(int i = 0; i < num_class;i++){
         	y.push_back(Neuron());
         }
 
@@ -132,75 +132,91 @@
 		multi_test(testing_data);
 	}
 
-	void perceptron::multi_test(vector<Par> data_testing){
-            testing_data = data_testing;
-            ofstream of("salida_perceptron.txt");
-            int ndata = 0;
-            int nok = 0;
-            for(vector<Par>::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
+	void perceptron::multi_test(std::vector<Par> data_testing){
+        testing_data = data_testing;
+        ofstream of("salida_perceptron.txt");
+        int ndata = 0;
+        int nok = 0;
+        for(vector<Par>::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
 
-            	Par instance = i[0];
+        	Par instance = i[0];
+        	int clase=1;
+			for (std::vector<int>::iterator citr = instance.second.begin(); citr != instance.second.end(); ++citr)
+			{
+				if(citr[0] == 1) break;
+				clase++;
+			}
+			//cout << "clase: " << clase << endl;
 
-            	//obtenemos la clase
-            	float clase=1;
-				clase = instance.second;
+            //Inicializamos las neuronas
+            for (std::vector<Neuron>::iterator itr = y.begin(); itr != y.end(); ++itr)
+			{
+				itr[0].in_value=0;
+			}
 
+			for (std::vector<Neuron>::iterator itr = z.begin(); itr != z.end(); ++itr)
+			{
+				if(itr[0].is_bias == 1)continue;
+				itr[0].in_value = 0;
+			}
 
-                //Inicializamos las neuronas
-                for (std::vector<Neuron>::iterator itr = y.begin(); itr != y.end(); ++itr)
-				{
-					itr[0].in_value=0;
-				}
-
-				for (std::vector<Neuron>::iterator itr = z.begin(); itr != z.end(); ++itr)
-				{
-					if(itr[0].is_bias == 1)continue;
-					itr[0].in_value = 0;
-				}
-
-                int cin = 0;
-                for(vector<float>::iterator in_n = i->first.begin(); in_n != i->first.end(); ++in_n){
-                    input[cin].out_value = preProcesar(in_n[0], cin);
-                    cin++;
-                }
-
-                //Propagamos a la capa Z
-                for(vector<Link>::iterator in_link = l_z.begin(); in_link != l_z.end(); ++in_link){
-                    in_link[0].sumLink();
-                }
-
-                //Calculamos salida de la capa Z
-                for (vector<Neuron>::iterator 	neuronasZ = z.begin(); 	neuronasZ != z.end(); ++neuronasZ)
-				{
-					if(neuronasZ[0].is_bias==1) neuronasZ[0].out_value = 1;
-					else neuronasZ[0].evalNeuron(0, &bipolar_sigmoidal);
-				}
-
-                //Propagamos a la capa Y
-                for(vector<Link>::iterator in_link = l_y.begin(); in_link != l_y.end(); ++in_link){
-                    in_link[0].sumLink();
-                }
-
-                //Calcula las respuestas
-                float pred_class = y[0].in_value;
-				if(abs(clase - pred_class) < 0.01 ) nok++;
-                
-                //escribe la clase predicha en un fichero
-				string out_string = "";
-				char buff[100];
-				//string data = std::to_string(pred_class);
-				sprintf(buff, "%lf", pred_class);
-
-				//of << out_string << buff << endl;
-                
-                ndata++;
+            int cin = 0;
+            for(vector<float>::iterator in_n = i->first.begin(); in_n != i->first.end(); ++in_n){
+                //input[cin].in_value = in_n[0];
+                input[cin].out_value = preProcesar(in_n[0], cin);
+                cin++;
             }
-            of.close();
-            cout << "Acierto: " << ((float)nok / ndata) * 100 << endl;
+
+            //Propagamos a la capa Z
+            for(vector<Link>::iterator in_link = l_z.begin(); in_link != l_z.end(); ++in_link){
+                in_link[0].sumLink();
+            }
+
+            //Calculamos salida de la capa Z
+            for (vector<Neuron>::iterator 	neuronasZ = z.begin(); 	neuronasZ != z.end(); ++neuronasZ)
+			{
+				if(neuronasZ[0].is_bias==1) neuronasZ[0].out_value = 1;
+				else neuronasZ[0].evalNeuron(0, &bipolar_sigmoidal);
+			}
+
+            //Propagamos a la capa Y
+            for(vector<Link>::iterator in_link = l_y.begin(); in_link != l_y.end(); ++in_link){
+                in_link[0].sumLink();
+            }
+
+            //Calcula las respuestas
+            //vector<float> respuesta (y.size(), 0);
+            int pred_class = 0;
+			int cnt = 1;
+			float max_value = -9999;
+			//tenemos que ver cual es la neurona activada, en caso de dos, dar error
+			for (std::vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy)
+			{
+					if(neuy[0].evalNeuron(0,&bipolar_sigmoidal)>= max_value){
+						pred_class = cnt;
+						max_value = neuy[0].out_value;
+					}
+					//if(cnt==3)cout << "salida y:" << neuy[0].out_value << "\n";
+					cnt++;	
+
+			}
+			if(clase == pred_class) nok++;
+            
+			string out_string = "";
+			for(int c = 1; c <= instance.second.size(); c++){
+				if(c == pred_class) out_string = out_string + "1 ";
+				else out_string = out_string + "0 ";
+			}
+			of << out_string << endl;
+            //of << pred_class << endl;
+            //escribe la clase predicha en un fichero.
+            ndata++;
+        }
+        of.close();
+        cout << "Acierto: " << ((float)nok / ndata) * 100 << endl;
     }
  
 	void perceptron::multi_train(){
-
 		ofstream of_stat("perceptron_train_stat.txt");
 		cout << "iniciando perceptron multicapa";
 		//el numero de clases es el tamanio de un dato, menos numAtt
@@ -210,9 +226,6 @@
             bool error = false;
 			int numOk=0;
 			int numInstance = 0;
-			float pred_class = 0;
-			float clase = 0;
-			cout << training_data.size() << endl;
 			for (vector<Par>::iterator caso = training_data.begin(); caso != training_data.end(); ++caso)
 			{
 				Par instance = caso[0];
@@ -226,17 +239,21 @@
 
 				for (std::vector<Neuron>::iterator itr = z.begin(); itr != z.end(); ++itr)
 				{
+
 					itr[0].delta_value = 0;
 					if(itr[0].is_bias == 1)continue;
 					itr[0].in_value = 0;
 				}
+
 				//FEEDFORWARD
 				//por cada caso de entrenamiento, inicializar neuronas
 				int i=0;                   
 				for (std::vector<float>::iterator att = instance.first.begin(); att != instance.first.end(); ++att)
 				{
 					//input[i].in_value = att[0];
+
 					input[i].out_value = preProcesar(att[0],i);
+
 					i++;
 					if(input[i].is_bias==1){
 						//input[i++].out_value = 1;
@@ -249,12 +266,18 @@
 				//}
 
 				//e interpretamos la clase
-				clase = instance.second;
+				int clase=1;
+				for (std::vector<int>::iterator citr = instance.second.begin(); citr != instance.second.end(); ++citr)
+				{
+					if(citr[0] == 1) break;
+					clase++;
+				}
 				//ahora, procedemos a calcular las salidas
 					//propagamos las entradas
 				for (std::vector<Link>::iterator link = l_z.begin(); link != l_z.end(); ++link)
 				{
 					link[0].sumLink();
+					
 				}
 
 					//calculamos valor de capa media, aplicando la bipolar para calcular la salida
@@ -270,37 +293,53 @@
 					link_y[0].sumLink();
 				}
 					//calculamos las salidas, y vemos la clase respuesta
-				//float pred_class = 0;
-				//miramos salida de la neurona
-				y[0].out_value = y[0].in_value;
-				pred_class = y[0].in_value;				
-				//pred_class = y[0].evalNeuron(0,&bipolar_sigmoidal);
-				if(abs(pred_class - clase)<0.01){
+				int pred_class = 0;
+				int cnt = 1;
+				float max_value = -9999;
+				//tenemos que ver cual es la neurona activada, en caso de dos, dar error
+				for (std::vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy)
+				{
+						if(neuy[0].evalNeuron(0,&bipolar_sigmoidal)>= max_value){
+							pred_class = cnt;
+							max_value = neuy[0].out_value;
+						}
+						//cout << "salida y:" << neuy[0].out_value << "\n";
+						cnt++;	
+
+				}
+				if(pred_class == clase){
 					//if(pred_class == 3)cout << "epoch: " << epoch << "pred: " <<pred_class << "value: "<< max_value<< endl;
+
 					numOk++;	
 				}else{
 					error = true;
 				}
+
+
 					//BACKPROPAGATION:
 				
 				//primero hallamos los delta value de las neuronas de salida
+				cnt = 0;
 				float ecm_contr = 0;
-				for (vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy)
+				for (vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy, cnt++)
 				{
-					float val = clase;
+					float val = -0.9;
 
-					//neuy[0].delta_value = (val-neuy[0].out_value)*
-									//(0.5*(1-neuy[0].out_value)*(1+neuy[0].out_value)); //BIPOLAR
-									//comprobarlo!! quizas necesito la derivada de la funcion linear
+					if(instance.second[cnt]==1){ //para ver si es valor teorico 1 o -1 la neurona de salidas
+						val = 0.9;
+					}
+
+					neuy[0].delta_value = (val-neuy[0].out_value)*
+									(0.5*(1-neuy[0].out_value)*(1+neuy[0].out_value)); //BIPOLAR
 									//(neuy[0].out_value*(1-neuy[0].out_value)); //BINARY
 					ecm_contr += (val - neuy[0].out_value)*(val - neuy[0].out_value);
-					neuy[0].delta_value = (val - neuy[0].out_value);//*(val - neuy[0].out_value);
 				}
 
 				ecm_contr /= y.size();
 				sum_ecm += ecm_contr;
 				//vemos actualizacion pesos de salida
-				for (vector<Link>::iterator 	link_y = 	l_y.begin(); 	link_y != 	l_y.end(); ++link_y)
+				cnt = 0;
+				for (vector<Link>::iterator 	link_y = 	l_y.begin(); 	link_y != 	l_y.end(); ++link_y,cnt++)
 				{
 						if(link_y[0].from->is_bias == 1){
 							link_y[0].weight_update += learn_rate*link_y[0].to->delta_value;
@@ -347,12 +386,11 @@
 			}
 			//if(epoch % 5 == 0)
 			sum_ecm = sum_ecm/(training_data.size());
-			cout << "Epoca num:"<<epoch <<" correctness: " <<((float)(numOk)/training_data.size())*100 << "\n" << endl;
-			cout << "dato oficial:" << clase << " dato obtenido:" << pred_class <<endl;
-            of_stat << epoch << "\t" << 100 - ((float)(numOk)/training_data.size())*100 << "\t" << sum_ecm << endl;
+			cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
+            of_stat << epoch << "\t" << 100 - ((double)(numOk)/training_data.size())*100 << "\t" << sum_ecm << endl;
            // if(numOk == (training_data.size()-1)) break;
             if(error == false) break;
-            if(epoch >= 2000) break;
+            if(epoch >= 1000) break;
             epoch++;
 		}
 			cout << "\ntotal epocas :" << epoch << "\n";
@@ -414,6 +452,7 @@
 		
 		for(int epoch = 0; epoch < raw_data.size()-num_pred; epoch++){
 			float pred = exploit_epoch(values);
+			//cout << "epoca nº: " << epoch << endl;
 			//actualización de valores
 			for(int i = num_att; i > 1; i--){
 				values[i] = preProcesar(values[i-1],i);

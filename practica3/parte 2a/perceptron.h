@@ -8,7 +8,7 @@
 #include <string>
 using namespace std;
 
-typedef pair<vector<float>, float> Par;;
+typedef pair<vector<float>, vector<int>> Par;;
 
 
 float binary_sigmoidal(void* context, float in_value);

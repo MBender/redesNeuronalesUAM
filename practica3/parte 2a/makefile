@@ -1,12 +1,13 @@
 CC=g++
 CFLAGS=-g -std=c++0x -Wall
 SRC=neuron.cpp neuron.h series.cpp series.h
-PERCEPTRON=perceptron.cpp perceptron.h main_series.cpp
+PERCEPTRON=perceptron.cpp perceptron.h 
+MAIN=main_series.cpp
 
-perceptron:  $(SRC) $(PERCEPTRON)
-	$(CC) $(CFLAGS) $(SRC) $(PERCEPTRON)  -o perceptron
+all: $(MAIN) $(SRC) $(PERCEPTRON)
+	$(CC) $(CFLAGS) $(SRC) $(PERCEPTRON) $(MAIN) -o perceptron
 
-clean: 
+clean:
 	rm -f perceptron
 
 help:

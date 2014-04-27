@@ -1,6 +1,5 @@
 using namespace std;
 
-#include "cargar.h"
 #include "perceptron.h"
 #include <iostream>
 #include <cstdio>
@@ -16,11 +15,12 @@ int main(int argc, char **argv){
 		//check parameters
 		std::string arg = argv[3];
 		float part = ::atof(arg.c_str());
-		vector<float> * raw_data;
+		vector<float>  raw_data;
 		perceptron p = adapta_fichero_serie(argv[1],argv[2],part, 5, &raw_data);
-		procesar_recursiva(*raw_data, part);
-		p.train();
-		p.multi_test(); //MAL. no necesita ahora mismo clasificar, solo necesita c
+
+		raw_data = read_serie(argv[1]);
+
+		p.procesar_recursiva(raw_data, part);
 	}else if(argc==7){
 		/*std::string arg = argv[2];
 		float learn_rate = ::atof(arg.c_str());

@@ -31,47 +31,64 @@ perceptron adapta_fichero_serie(string nombre_entrada, string nombre_salida, int
 
 	std::vector<float> serie_raw = read_serie(nombre_entrada);
 	datos = &serie_raw;
+	
+	//abrimos fichero de salida
+	ofstream escribir(nombre_salida.c_str());
+
 	//ahora creamos la serie
 	//miramos cantidad para particion
 	int size = serie_raw.size();
-	//preparamos fichero para escribir
-	ofstream escribir(nombre_salida.c_str);
+
+	//calculamos cantidad de test
+	int size_train = size*0.25;
+
+	//introducimos los datos sobre la serie
+	escribir << np << " " << 2 << endl;
+
 	//creamos vector de entrenamiento
 	std::vector<Par> training;
-
-	//escribimos la informacion sobre los datos
-	escribir << np << 1 << endl;
-	for (int i = 0; i < size -np; ++i)
+	for (int i = 0; i < size-np; ++i)
 	{
 		Par training_pair;
 		std::vector<float> v;
+		std::vector<int> v2;
 		float clase;
 		for(int j = 0; j <= np; j++){
 			if(j == np){
-
-				clase = serie_raw[i+j];
-				escribir << clase;
+				if(serie_raw[i+j]>serie_raw[i+j-1]){//crece
+					v2.push_back(1);
+					v2.push_back(0);
+					escribir << 1 << " " << 0 << endl;
+				}else{ //  no crece
+					v2.push_back(0);
+					v2.push_back(1);
+					escribir << 0 << " " << 1 << endl;
+				}
 			}else{
 				//cout << " " << serie_raw[i+j];
-				escribir << serie_raw[i+j];
+				
 				v.push_back(serie_raw[i+j]);
+				escribir << serie_raw[i+j] << " ";
 			}
 			//cout << clase << endl;
 		}
 		escribir << endl;
 		training_pair.first = v;
-		training_pair.second = clase;
+		training_pair.second = v2;
 		training.push_back(training_pair);
 	}
 	//creamos la red neuronal
 	perceptron p(nneurons
 		,0.25,training, 0.5, true, true);
 
-	//entrenamos
-	p.multi_train();	
-
-	//y hacemos el test
-	p.multi_test();
 	escribir.close();
+
+	//y entrenamos
+	p.multi_train();
+
+	//testeamos
+	p.multi_test();
+
+
 	return p;
 }

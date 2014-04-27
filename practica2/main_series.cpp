@@ -2,6 +2,7 @@ using namespace std;
 
 #include "cargar.h"
 #include "perceptron.h"
+#include "series.h"
 #include <iostream>
 #include <cstdio>
 //invocacion de main:
