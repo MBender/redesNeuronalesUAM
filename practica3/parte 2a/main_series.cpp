@@ -21,21 +21,17 @@ int main(int argc, char **argv){
 		raw_data = read_serie(argv[1]);
 
 		p.procesar_recursiva(raw_data, part);
-	}else if(argc==7){
-		/*std::string arg = argv[2];
-		float learn_rate = ::atof(arg.c_str());
-		arg = argv[3];
+	}else if(argc==5){
+		std::string arg = argv[3];
 		float part = ::atof(arg.c_str());
-		bool is_part = true;
-		if(part==0)is_part = false;
-		arg = argv[1];
-		int znum = ::atoi(arg.c_str());
-		Test t = cargar(argv[4]);
-		perceptron p ( znum, part,t, learn_rate, is_part, false);
-		p.train();
-		if(is_part==false)p.multi_test(t);
-		else p.multi_test();
-		 */
+		vector<float>  raw_data;
+		arg = argv[4];
+		float nneu = ::atof(arg.c_str());
+		perceptron p = adapta_fichero_serie(argv[1],argv[2],part, nneu, &raw_data);
+
+		raw_data = read_serie(argv[1]);
+
+		p.procesar_recursiva(raw_data, part);
 	}
 
     return 0;

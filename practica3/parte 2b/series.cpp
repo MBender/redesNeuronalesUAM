@@ -35,7 +35,7 @@ perceptron adapta_fichero_serie(string nombre_entrada, string nombre_salida, int
 	//miramos cantidad para particion
 	int size = serie_raw.size();
 	//preparamos fichero para escribir
-	ofstream escribir(nombre_salida.c_str);
+	ofstream escribir(nombre_salida.c_str());
 	//creamos vector de entrenamiento
 	std::vector<Par> training;
 
@@ -65,7 +65,7 @@ perceptron adapta_fichero_serie(string nombre_entrada, string nombre_salida, int
 	}
 	//creamos la red neuronal
 	perceptron p(nneurons
-		,0.25,training, 0.5, true, true);
+		,0.5,training, 0.2, true, false);
 
 	//entrenamos
 	p.multi_train();	

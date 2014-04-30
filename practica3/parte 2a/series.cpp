@@ -79,7 +79,7 @@ perceptron adapta_fichero_serie(string nombre_entrada, string nombre_salida, int
 	}
 	//creamos la red neuronal
 	perceptron p(nneurons
-		,0.25,training, 0.5, true, true);
+		,0.5,training, 0.1, true, false);
 
 	escribir.close();
 

@@ -1,0 +1,5 @@
+Instrucciones:
+
+Para compilar: make all
+
+Para ejecutar: ./perceptron <archivo_entrada> <archivo_salida> <np> <neuronas> 

@@ -67,6 +67,7 @@ private:
 	vector<float> desvioEstandar;
 
 	float preProcesar(float, int);
+	float denormalizar (float, int);
 
 
 };

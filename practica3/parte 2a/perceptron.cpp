@@ -13,7 +13,7 @@
 
 	perceptron::perceptron(int num_hidden, float part, vector<Par> data_training, float rate, bool shift, bool norm){
 
-		learn_rate = 0.5;
+		learn_rate = 0.1;
 
 		num_att = data_training[0].first.size();
 		num_class = data_training[0].second.size();
@@ -22,7 +22,7 @@
         float top = data_training.size()*part;
 	    if(shift){
 	        for(c=0; c < top; c++){
-            training_data.push_back(data_training[c]);
+            	training_data.push_back(data_training[c]);
 	        }
 	        for(; c < data_training.size(); c++){
 	            testing_data.push_back(data_training[c]);
@@ -165,6 +165,9 @@
                 //input[cin].in_value = in_n[0];
                 input[cin].out_value = preProcesar(in_n[0], cin);
                 cin++;
+                //if(input[cin].is_bias==1){
+				//		input[cin++].out_value = 1;
+				//	}
             }
 
             //Propagamos a la capa Z
@@ -221,10 +224,12 @@
 		cout << "iniciando perceptron multicapa";
 		//el numero de clases es el tamanio de un dato, menos numAtt
         int epoch = 0;
+        float old_ecm = 0;
+        int numOk=0;
    		while(true){
    			float sum_ecm = 0;
             bool error = false;
-			int numOk=0;
+			numOk = 0;
 			int numInstance = 0;
 			for (vector<Par>::iterator caso = training_data.begin(); caso != training_data.end(); ++caso)
 			{
@@ -250,14 +255,12 @@
 				int i=0;                   
 				for (std::vector<float>::iterator att = instance.first.begin(); att != instance.first.end(); ++att)
 				{
-					//input[i].in_value = att[0];
-
 					input[i].out_value = preProcesar(att[0],i);
 
 					i++;
-					if(input[i].is_bias==1){
-						//input[i++].out_value = 1;
-					}
+					/*if(input[i].is_bias==1){
+						input[i++].out_value = 1;
+					}*/
 				}
 				//for (std::vector<Neuron>::iterator layer_in = input.begin(); layer_in != input.end(); ++layer_in)
 				//{
@@ -386,15 +389,17 @@
 			}
 			//if(epoch % 5 == 0)
 			sum_ecm = sum_ecm/(training_data.size());
-			cout << "Epoca num:"<<epoch <<" correctness: " <<((double)(numOk)/training_data.size())*100 << "\n";
+			//cout << "Epoca num:"<<epoch <<" acierto: " <<((double)(numOk)/training_data.size())*100 << "\n";
             of_stat << epoch << "\t" << 100 - ((double)(numOk)/training_data.size())*100 << "\t" << sum_ecm << endl;
            // if(numOk == (training_data.size()-1)) break;
-            if(error == false) break;
-            if(epoch >= 1000) break;
+            //if(abs(old_ecm - sum_ecm)<0.000001) break;
+            if(epoch >= 40) break;
+            old_ecm = sum_ecm;
             epoch++;
 		}
-			cout << "\ntotal epocas :" << epoch << "\n";
-			of_stat.close();
+		cout << " acierto: " <<((double)(numOk)/training_data.size())*100 << "\n";
+		cout << "\ntotal epocas :" << epoch << "\n";
+		of_stat.close();
 	}
 
 	double perceptron::exploit_epoch(vector<float> in_data){

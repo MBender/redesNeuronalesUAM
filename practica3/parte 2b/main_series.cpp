@@ -16,7 +16,7 @@ int main(int argc, char **argv){
 		std::string arg = argv[3];
 		float part = ::atof(arg.c_str());
 		vector<float>  raw_data;
-		perceptron p = adapta_fichero_serie(argv[1],argv[2],part, 5, &raw_data);
+		perceptron p = adapta_fichero_serie(argv[1],argv[2],part, 20, &raw_data);
 
 		raw_data = read_serie(argv[1]);
 
@@ -24,7 +24,7 @@ int main(int argc, char **argv){
 	}else if(argc==7){
 		/*std::string arg = argv[2];
 		float learn_rate = ::atof(arg.c_str());
-		arg = argv[3];
+		arg = argv  [3];
 		float part = ::atof(arg.c_str());
 		bool is_part = true;
 		if(part==0)is_part = false;

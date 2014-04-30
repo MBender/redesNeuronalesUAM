@@ -1,6 +1,8 @@
 #include "perceptron.h"
 #include <stdio.h>
 
+	
+
 	float binary_sigmoidal(void* context, float in_value){
 		return (float)1/(1+exp(-in_value));
 	}
@@ -9,11 +11,15 @@
 		return ((float)2/(1+exp(-in_value))) - 1;
 	}
 
+	double derivadaSigmoideBipolar (double x) {
+		return (double)1/2*(1+bipolar_sigmoidal(0,x))*(1-bipolar_sigmoidal(0,x));
+	}
+
 	perceptron::perceptron(){}
 
 	perceptron::perceptron(int num_hidden, float part, vector<Par> data_training, float rate, bool shift, bool norm){
 
-		learn_rate = 0.5;
+		learn_rate = rate;
 
 		num_att = data_training[0].first.size();
 		num_class = 1;
@@ -22,24 +28,23 @@
         float top = data_training.size()*part;
 	    if(shift){
 	        for(c=0; c < top; c++){
-            training_data.push_back(data_training[c]);
+            	training_data.push_back(data_training[c]);
 	        }
 	        for(; c < data_training.size(); c++){
 	            testing_data.push_back(data_training[c]);
 	        }
-	            training_data = data_training;
+	            //training_data = data_training;
 	    }else{
 	    	training_data = data_training;
 			//input
 	    }
-	    cout << training_data.size();
-		for (int i = 0; i < num_att; ++i)
+	    for (int i = 0; i < num_att; ++i)
 		{
 			input.push_back(Neuron());
 		}
 		//add a Bias
 		Neuron in_bias;
-		in_bias.in_value = 1;
+		in_bias.out_value = 1;
 		in_bias.is_bias = 1;
 		input.push_back(in_bias);
 			//hidden
@@ -48,7 +53,6 @@
 			z.push_back(Neuron());
 		}
 		//if there is not a hidden layer, dont add bias neuron
-		
 
 		threshold = 2;
         for(int i = 0; i < 1;i++){
@@ -104,6 +108,7 @@
 			//al ser salida no normalizada, no tiene sentido normalizar entrada. 
 				//de todas formas, probar :D
 		normalizar = norm;
+		/*normalizar = norm;
 		if(normalizar) {
 			//for(int indice = 0; indice < num_att; indice++) {
 				promedio.push_back(0);
@@ -118,14 +123,20 @@
 				diffCuadradas /= training_data.size() - 1;
 				desvioEstandar.push_back(sqrt(diffCuadradas));
 			//}
-		}
+		}*/
 	}
 
 	float perceptron::preProcesar (float x, int indice) {
-		if(!normalizar)
+		//if(!normalizar)
 			return x;
 		//cout << desvioEstandar[0] << endl;
-		return (x-promedio[0])/desvioEstandar[0];
+		//return (x-promedio[0])/desvioEstandar[0];
+	}
+
+	float perceptron::denormalizar (float x, int indice) {
+		//if(!normalizar)
+			return x;
+		//return (x*desvioEstandar[0])+promedio[0];
 	}
 
 	void perceptron::multi_test(){
@@ -137,6 +148,9 @@
             ofstream of("salida_perceptron.txt");
             int ndata = 0;
             int nok = 0;
+            float anterior = 0;
+            float ecm = 0;
+            float ecm_anterior = 0;
             for(vector<Par>::iterator i = testing_data.begin(); i!=testing_data.end(); ++i){
 
             	Par instance = i[0];
@@ -160,8 +174,7 @@
 
                 int cin = 0;
                 for(vector<float>::iterator in_n = i->first.begin(); in_n != i->first.end(); ++in_n){
-                    input[cin].out_value = preProcesar(in_n[0], cin);
-                    cin++;
+                    input[cin++].out_value = preProcesar(in_n[0], cin);
                 }
 
                 //Propagamos a la capa Z
@@ -183,8 +196,11 @@
 
                 //Calcula las respuestas
                 float pred_class = y[0].in_value;
-				if(abs(clase - pred_class) < 0.01 ) nok++;
                 
+                //Calcula ECM
+                ecm += (clase - pred_class)*(clase - pred_class);
+                ecm_anterior+=(clase - anterior)*(clase - anterior);
+				
                 //escribe la clase predicha en un fichero
 				string out_string = "";
 				char buff[100];
@@ -192,11 +208,12 @@
 				sprintf(buff, "%lf", pred_class);
 
 				//of << out_string << buff << endl;
-                
+                anterior = clase;
                 ndata++;
             }
             of.close();
-            cout << "Acierto: " << ((float)nok / ndata) * 100 << endl;
+            cout << "ECM: " << ((float)ecm / ndata) << endl;
+            cout << "ECM ANTERIOR: " << ((float)ecm_anterior / ndata) << endl;
     }
  
 	void perceptron::multi_train(){
@@ -212,7 +229,7 @@
 			int numInstance = 0;
 			float pred_class = 0;
 			float clase = 0;
-			cout << training_data.size() << endl;
+			//cout << training_data.size() << endl;
 			for (vector<Par>::iterator caso = training_data.begin(); caso != training_data.end(); ++caso)
 			{
 				Par instance = caso[0];
@@ -232,21 +249,16 @@
 				}
 				//FEEDFORWARD
 				//por cada caso de entrenamiento, inicializar neuronas
-				int i=0;                   
+				int i=0; 
 				for (std::vector<float>::iterator att = instance.first.begin(); att != instance.first.end(); ++att)
 				{
 					//input[i].in_value = att[0];
 					input[i].out_value = preProcesar(att[0],i);
 					i++;
-					if(input[i].is_bias==1){
-						//input[i++].out_value = 1;
-					}
+					//if(input[i].is_bias=1) input[i].out_value = 1;
+					
 				}
-				//for (std::vector<Neuron>::iterator layer_in = input.begin(); layer_in != input.end(); ++layer_in)
-				//{
-				//	if(layer_in[0].is_bias == 1) layer_in[0].out_value = 1;
-				//	else layer_in[0].out_value = instance.first[i++];
-				//}
+				
 
 				//e interpretamos la clase
 				clase = instance.second;
@@ -273,9 +285,10 @@
 				//float pred_class = 0;
 				//miramos salida de la neurona
 				y[0].out_value = y[0].in_value;
-				pred_class = y[0].in_value;				
+				pred_class = y[0].out_value;				
 				//pred_class = y[0].evalNeuron(0,&bipolar_sigmoidal);
-				if(abs(pred_class - clase)<0.01){
+				//no hacer esto
+				if(abs(clase - denormalizar(pred_class,1))<0.1){
 					//if(pred_class == 3)cout << "epoch: " << epoch << "pred: " <<pred_class << "value: "<< max_value<< endl;
 					numOk++;	
 				}else{
@@ -288,16 +301,15 @@
 				for (vector<Neuron>::iterator 	neuy = 	y.begin(); 	neuy != 	y.end(); ++	neuy)
 				{
 					float val = clase;
-
-					//neuy[0].delta_value = (val-neuy[0].out_value)*
+					neuy[0].delta_value = (val - neuy[0].out_value);
+					//neuy[0].delta_value = (preProcesar(val,1)-neuy[0].out_value);//*
 									//(0.5*(1-neuy[0].out_value)*(1+neuy[0].out_value)); //BIPOLAR
 									//comprobarlo!! quizas necesito la derivada de la funcion linear
 									//(neuy[0].out_value*(1-neuy[0].out_value)); //BINARY
-					ecm_contr += (val - neuy[0].out_value)*(val - neuy[0].out_value);
-					neuy[0].delta_value = (val - neuy[0].out_value);//*(val - neuy[0].out_value);
+									//(neuy[0].out_value/(1+neuy[0].out_value*neuy[0].out_value));//ARTAN
+					ecm_contr += (preProcesar(val,1) - neuy[0].out_value)*(preProcesar(val,1) - neuy[0].out_value);
 				}
 
-				ecm_contr /= y.size();
 				sum_ecm += ecm_contr;
 				//vemos actualizacion pesos de salida
 				for (vector<Link>::iterator 	link_y = 	l_y.begin(); 	link_y != 	l_y.end(); ++link_y)
@@ -319,7 +331,7 @@
 				//ahora calculamos la rectificacion de delta para las capas intermedias
 				for (std::vector<Neuron>::iterator 	neuz = 	z.begin(); 	neuz != 	z.end(); ++	neuz)
 				{
-					neuz[0].delta_value *= 0.5*(1+neuz[0].out_value)*(1-neuz[0].out_value); //BIPOLAR
+					neuz[0].delta_value *= derivadaSigmoideBipolar(neuz[0].in_value);//0.5*(1+neuz[0].out_value)*(1-neuz[0].out_value); //BIPOLAR
 					//neuz[0].delta_value *= neuz[0].out_value*(1-neuz[0].out_value); //BINARY
 				}
 				//rectificamos pesos de entrada
@@ -347,12 +359,10 @@
 			}
 			//if(epoch % 5 == 0)
 			sum_ecm = sum_ecm/(training_data.size());
-			cout << "Epoca num:"<<epoch <<" correctness: " <<((float)(numOk)/training_data.size())*100 << "\n" << endl;
-			cout << "dato oficial:" << clase << " dato obtenido:" << pred_class <<endl;
+			//cout << "Epoca num:"<<epoch <<" ecm: " << sum_ecm << "\n" << endl;
+			//cout << "dato oficial:" << clase << " dato obtenido:" << pred_class <<endl;
             of_stat << epoch << "\t" << 100 - ((float)(numOk)/training_data.size())*100 << "\t" << sum_ecm << endl;
-           // if(numOk == (training_data.size()-1)) break;
-            if(error == false) break;
-            if(epoch >= 2000) break;
+            if(epoch >= 1000) break;
             epoch++;
 		}
 			cout << "\ntotal epocas :" << epoch << "\n";
@@ -378,6 +388,8 @@
                 input[cin].out_value = in_n[0];
                 cin++;
             }
+            input[input.size()-1].out_value = 1;	                  
+				
 
             //Propagamos a la capa Z
             for(vector<Link>::iterator in_link = l_z.begin(); in_link != l_z.end(); ++in_link){
@@ -405,29 +417,21 @@
 	void perceptron::procesar_recursiva(vector<float> raw_data, int num_pred){
 	
 		vector<float> values;
-
 		ofstream of("serie_predicha.txt");
-		
 		for(int i = 0; i < num_att; i++){
-			values.push_back(raw_data[num_pred-i]);
+			values.push_back(raw_data[i]);
 		}
 		
 		for(int epoch = 0; epoch < raw_data.size()-num_pred; epoch++){
 			float pred = exploit_epoch(values);
 			//actualización de valores
-			for(int i = num_att; i > 1; i--){
-				values[i] = preProcesar(values[i-1],i);
+			for(int i = 0; i <num_att-1; i++){
+				values[i] = preProcesar(values[i+1],0);
 			}
-			values[0] = preProcesar(pred,0);
+			values[num_att-1] = preProcesar(pred,0);
 
 			of << pred << endl;
 		}
 
 		of.close();
 	}
-
-
-
-
-
-	
